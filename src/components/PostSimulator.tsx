@@ -71,6 +71,7 @@ const PostSimulator = () => {
         <div
           ref={postRef}
           className="bg-white p-4 flex flex-col"
+          style={{ border: 'none', borderRadius: '8px', overflow: 'hidden' }}
         >
           <div className="mb-3">
             <Textarea
@@ -79,31 +80,36 @@ const PostSimulator = () => {
               className="facebook-font border-none resize-none focus-visible:ring-0 p-0 text-base"
               rows={4}
               placeholder="Digite seu texto aqui..."
+              style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
             />
           </div>
           
-          <div
-            className={`mt-2 flex items-center justify-center border-2 border-dashed rounded-lg ${
-              isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-            } ${image ? '' : 'h-40'} overflow-hidden cursor-pointer`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={handleImageClick}
-          >
-            {image ? (
+          {image && (
+            <div className="mt-2 overflow-hidden" style={{ marginBottom: '0', borderRadius: '8px' }}>
               <img 
                 src={image} 
                 alt="Imagem do post" 
                 className="w-full h-auto object-contain"
               />
-            ) : (
+            </div>
+          )}
+          
+          {!image && (
+            <div
+              className={`mt-2 flex items-center justify-center border-2 border-dashed rounded-lg ${
+                isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+              } h-40 overflow-hidden cursor-pointer`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={handleImageClick}
+            >
               <div className="flex flex-col items-center justify-center py-6 text-gray-500">
                 <FileImage className="h-10 w-10 mb-2" />
                 <p>Arraste uma imagem ou clique para selecionar</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </Card>
 

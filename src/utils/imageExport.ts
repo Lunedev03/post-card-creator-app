@@ -11,10 +11,13 @@ export const exportAsImage = async (element: HTMLElement, fileName: string): Pro
     const canvas = await html2canvas(element, {
       allowTaint: true,
       useCORS: true,
-      backgroundColor: null,
+      backgroundColor: 'white', // Set white background instead of transparent
       scale: 2, // Higher resolution
       width: width,
       height: element.scrollHeight, // Allow dynamic height based on content
+      logging: false,
+      removeContainer: true, // Remove the temporary container when done
+      foreignObjectRendering: false, // This often causes border issues
     });
     
     const image = canvas.toDataURL('image/png', 1.0);
