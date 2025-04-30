@@ -7,14 +7,13 @@ import { Download, FileImage } from 'lucide-react';
 import { exportAsImage } from '@/utils/imageExport';
 
 const PostSimulator = () => {
-  const [postText, setPostText] = useState('Digite seu texto aqui...');
+  const [postText, setPostText] = useState('O que você está pensando?');
   const [image, setImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const postRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Adjust textarea height on input to match content
+  // Ajusta a altura do textarea ao digitar
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -27,19 +26,15 @@ const PostSimulator = () => {
     adjustTextareaHeight();
   };
 
-  // Handle textarea focus to ensure proper styling
   const handleTextareaFocus = () => {
-    if (postText === 'Digite seu texto aqui...' && textareaRef.current) {
+    if (postText === 'O que você está pensando?' && textareaRef.current) {
       setPostText('');
-      adjustTextareaHeight();
     }
   };
 
-  // Handle textarea blur to reset placeholder if empty
   const handleTextareaBlur = () => {
     if (postText.trim() === '' && textareaRef.current) {
-      setPostText('Digite seu texto aqui...');
-      adjustTextareaHeight();
+      setPostText('O que você está pensando?');
     }
   };
 
@@ -92,22 +87,24 @@ const PostSimulator = () => {
     }
   };
 
-  // Ensure textarea is properly sized when component mounts or text changes
+  // Ajusta a altura do textarea quando o componente é montado ou o texto muda
   useEffect(() => {
     adjustTextareaHeight();
   }, [postText]);
 
   return (
-    <div className="flex flex-col items-center w-full p-4" ref={containerRef}>
-      <Card className="facebook-post-card w-full max-w-[500px] overflow-hidden shadow-md rounded-lg mb-4">
+    <div className="flex flex-col items-center w-full p-4">
+      <h1 className="text-2xl font-bold mb-2">Simulador de Post</h1>
+      <p className="text-gray-600 mb-6">Crie seu post estilo rede social e exporte como imagem</p>
+      
+      <Card className="w-full max-w-[500px] overflow-hidden shadow-md rounded-lg mb-4 bg-white">
         <div
           ref={postRef}
-          className="bg-white p-4 flex flex-col"
-          style={{ 
-            border: 'none', 
-            borderRadius: '8px', 
+          className="p-4 flex flex-col"
+          style={{
+            borderRadius: '8px',
             overflow: 'hidden',
-            position: 'relative'
+            backgroundColor: '#ffffff'
           }}
         >
           <div className="mb-3">
@@ -117,9 +114,9 @@ const PostSimulator = () => {
               onChange={handleTextChange}
               onFocus={handleTextareaFocus}
               onBlur={handleTextareaBlur}
-              className="facebook-font border-none resize-none focus-visible:ring-0 p-0 text-base"
-              style={{ 
-                wordBreak: 'break-word', 
+              className="border-none resize-none focus-visible:ring-0 p-0 text-base"
+              style={{
+                wordBreak: 'break-word',
                 whiteSpace: 'pre-wrap',
                 minHeight: '80px',
                 lineHeight: '1.5',
@@ -134,12 +131,12 @@ const PostSimulator = () => {
                 outline: 'none',
                 boxShadow: 'none'
               }}
-              placeholder="Digite seu texto aqui..."
+              placeholder="O que você está pensando?"
             />
           </div>
           
-          {image && (
-            <div className="mt-2 overflow-hidden" style={{ marginBottom: '0', borderRadius: '8px' }}>
+          {image ? (
+            <div className="mt-2 overflow-hidden rounded-lg" style={{ marginBottom: '0' }}>
               <img 
                 src={image} 
                 alt="Imagem do post" 
@@ -147,9 +144,7 @@ const PostSimulator = () => {
                 style={{ maxWidth: '100%', display: 'block' }}
               />
             </div>
-          )}
-          
-          {!image && (
+          ) : (
             <div
               className={`mt-2 flex items-center justify-center border-2 border-dashed rounded-lg ${
                 isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
@@ -161,7 +156,8 @@ const PostSimulator = () => {
             >
               <div className="flex flex-col items-center justify-center py-6 text-gray-500">
                 <FileImage className="h-10 w-10 mb-2" />
-                <p>Arraste uma imagem ou clique para selecionar</p>
+                <p>Clique para fazer upload ou arraste e solte</p>
+                <p className="text-xs text-gray-400">PNG, JPG, GIF até 10MB</p>
               </div>
             </div>
           )}
@@ -170,7 +166,7 @@ const PostSimulator = () => {
 
       <Button 
         onClick={handleExport} 
-        className="flex gap-2 items-center"
+        className="flex gap-2 items-center bg-indigo-900 hover:bg-indigo-800"
       >
         <Download className="h-4 w-4" />
         Exportar como imagem
