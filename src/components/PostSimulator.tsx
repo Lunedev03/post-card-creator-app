@@ -3,8 +3,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Download, FileImage } from 'lucide-react';
+import { Download, FileImage, Save } from 'lucide-react';
 import { exportAsImage } from '@/utils/imageExport';
+import { usePostHistory } from '@/contexts/PostHistoryContext';
+import { useToast } from '@/hooks/use-toast';
 
 const PostSimulator = () => {
   const [postText, setPostText] = useState('O que você está pensando?');
@@ -12,6 +14,8 @@ const PostSimulator = () => {
   const [isDragging, setIsDragging] = useState(false);
   const postRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { addPost } = usePostHistory();
+  const { toast } = useToast();
 
   // Ajusta a altura do textarea ao digitar
   const adjustTextareaHeight = () => {
@@ -87,6 +91,26 @@ const PostSimulator = () => {
     }
   };
 
+  const handleSaveToHistory = () => {
+    if (postText !== 'O que você está pensando?') {
+      addPost({
+        text: postText,
+        image: image
+      });
+      
+      toast({
+        title: "Post salvo!",
+        description: "O post foi salvo no seu histórico.",
+      });
+    } else {
+      toast({
+        title: "Erro ao salvar",
+        description: "Adicione algum texto antes de salvar.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Ajusta a altura do textarea quando o componente é montado ou o texto muda
   useEffect(() => {
     adjustTextareaHeight();
@@ -94,7 +118,7 @@ const PostSimulator = () => {
 
   return (
     <div className="flex flex-col items-center w-full p-4">
-      <Card className="w-full max-w-[500px] overflow-hidden shadow-md rounded-lg mb-4 bg-white">
+      <Card className="w-full max-w-[500px] overflow-hidden shadow-md rounded-lg mb-6 bg-white">
         <div
           ref={postRef}
           className="p-4 flex flex-col"
@@ -148,7 +172,7 @@ const PostSimulator = () => {
           ) : (
             <div
               className={`mt-2 flex items-center justify-center border-2 border-dashed rounded-lg ${
-                isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                isDragging ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'
               } h-40 overflow-hidden cursor-pointer`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -165,13 +189,24 @@ const PostSimulator = () => {
         </div>
       </Card>
 
-      <Button 
-        onClick={handleExport} 
-        className="flex gap-2 items-center bg-indigo-900 hover:bg-indigo-800"
-      >
-        <Download className="h-4 w-4" />
-        Exportar como imagem
-      </Button>
+      <div className="flex gap-2 w-full max-w-[500px] justify-center">
+        <Button 
+          onClick={handleExport} 
+          className="flex gap-2 items-center bg-indigo-600 hover:bg-indigo-700 flex-1"
+        >
+          <Download className="h-4 w-4" />
+          Exportar como imagem
+        </Button>
+        
+        <Button 
+          onClick={handleSaveToHistory}
+          variant="outline" 
+          className="flex gap-2 items-center border-indigo-600 text-indigo-600 hover:bg-indigo-50"
+        >
+          <Save className="h-4 w-4" />
+          Salvar no histórico
+        </Button>
+      </div>
     </div>
   );
 };

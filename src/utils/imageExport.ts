@@ -1,89 +1,82 @@
 
 import html2canvas from 'html2canvas';
 
-export const exportAsImage = async (element: HTMLElement, fileName: string): Promise<void> => {
+export const exportAsImage = async (
+  element: HTMLElement,
+  fileName: string
+): Promise<void> => {
   try {
-    // Removemos o elemento do DOM para trabalhar com uma cópia limpa
-    const originalElement = element;
+    // Create a clean copy for export
+    const exportClone = element.cloneNode(true) as HTMLElement;
     
-    // Criamos um clone do elemento para manipular sem afetar o original
-    const clone = originalElement.cloneNode(true) as HTMLElement;
+    // Set a fixed width for consistent exports
+    exportClone.style.width = '1080px';
+    exportClone.style.backgroundColor = '#ffffff';
+    exportClone.style.padding = '40px';
+    exportClone.style.borderRadius = '0';
     
-    // Configurações visuais para o clone
-    clone.style.position = 'fixed';
-    clone.style.top = '0';
-    clone.style.left = '0';
-    clone.style.width = '1080px'; // Largura fixa para exportação
-    clone.style.backgroundColor = '#ffffff';
-    clone.style.zIndex = '-9999';
-    clone.style.padding = '20px';
-    clone.style.boxSizing = 'border-box';
-    
-    // Remover elementos de UI que não devem aparecer na exportação
-    const buttonsToRemove = clone.querySelectorAll('button');
-    buttonsToRemove.forEach(button => button.remove());
-    
-    // Converter textareas para divs com estilos apropriados
-    const textareas = clone.querySelectorAll('textarea');
-    textareas.forEach(textarea => {
-      const textContent = (textarea as HTMLTextAreaElement).value;
+    // Find all textareas and convert to divs to ensure text is properly rendered
+    const textareas = exportClone.querySelectorAll('textarea');
+    textareas.forEach((textarea) => {
       const div = document.createElement('div');
-      div.innerHTML = textContent.replace(/\n/g, '<br>');
+      div.innerText = (textarea as HTMLTextAreaElement).value;
       div.style.fontFamily = 'Helvetica, Arial, sans-serif';
-      div.style.fontSize = '18px';
+      div.style.fontSize = '22px';
       div.style.lineHeight = '1.5';
       div.style.whiteSpace = 'pre-wrap';
       div.style.wordBreak = 'break-word';
-      div.style.width = '100%';
-      div.style.textAlign = 'left';
-      div.style.color = '#000000';
       textarea.parentNode?.replaceChild(div, textarea);
     });
     
-    // Remover qualquer elemento de drag-and-drop ou upload
-    const dropzones = clone.querySelectorAll('[class*="drag"], [class*="drop"]');
-    dropzones.forEach(zone => {
-      if (zone.classList.contains('hidden') || zone.getAttribute('style')?.includes('display: none')) {
-        return;
-      }
-      
-      const parent = zone.parentElement;
-      if (parent) parent.removeChild(zone);
-    });
-    
-    // Redimensionar imagens para se adequar à largura do texto
-    const images = clone.querySelectorAll('img');
-    images.forEach(img => {
+    // Ensure images are properly sized to match text width
+    const images = exportClone.querySelectorAll('img');
+    images.forEach((img) => {
+      img.style.width = '100%'; 
       img.style.maxWidth = '100%';
-      img.style.width = '100%';
-      img.style.height = 'auto';
       img.style.objectFit = 'contain';
+      img.style.marginTop = '16px';
+      img.style.borderRadius = '8px';
     });
     
-    // Adicionar o clone ao body para renderização
-    document.body.appendChild(clone);
+    // Remove any buttons or unwanted UI elements
+    const buttons = exportClone.querySelectorAll('button');
+    buttons.forEach(button => button.remove());
     
-    // Renderizar com html2canvas
-    const canvas = await html2canvas(clone, {
+    // Temporarily append to the document for conversion
+    exportClone.style.position = 'absolute';
+    exportClone.style.left = '-9999px';
+    document.body.appendChild(exportClone);
+
+    // Use html2canvas to create a canvas from the prepared element
+    const canvas = await html2canvas(exportClone, {
       allowTaint: true,
       useCORS: true,
+      scale: 2, // Higher quality
       backgroundColor: '#ffffff',
-      scale: 2, // Maior escala para melhor qualidade
       logging: false,
     });
-    
-    // Remover o clone após renderização
-    document.body.removeChild(clone);
-    
-    // Converter canvas para imagem e iniciar download
+
+    // Remove the temporary element
+    document.body.removeChild(exportClone);
+
+    // Create and trigger download
     const image = canvas.toDataURL('image/png', 1.0);
-    
-    // Criar link de download
-    const link = document.createElement('a');
-    link.download = fileName;
-    link.href = image;
-    link.click();
+    downloadImage(image, fileName);
+
+    return Promise.resolve();
   } catch (error) {
-    console.error('Falha ao exportar imagem:', error);
+    console.error('Error exporting image:', error);
+    return Promise.reject(error);
   }
+};
+
+const downloadImage = (blob: string, fileName: string): void => {
+  const fakeLink = document.createElement('a');
+  fakeLink.download = fileName;
+  fakeLink.href = blob;
+  
+  // Trigger download
+  document.body.appendChild(fakeLink);
+  fakeLink.click();
+  document.body.removeChild(fakeLink);
 };

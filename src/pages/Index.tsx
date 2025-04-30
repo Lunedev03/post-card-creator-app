@@ -1,12 +1,12 @@
 
 import React from 'react';
-import Header from '@/components/Header';
 import PostSimulator from '@/components/PostSimulator';
+import Header from '@/components/Header';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gray-100 py-8 facebook-container">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 py-6">
         <Header />
         <PostSimulator />
       </div>
