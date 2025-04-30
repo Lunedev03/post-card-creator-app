@@ -11,9 +11,35 @@ const PostSimulator = () => {
   const [image, setImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const postRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Adjust textarea height on input to match content
+  const adjustTextareaHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPostText(e.target.value);
+    adjustTextareaHeight();
+  };
+
+  // Handle textarea focus to ensure proper styling
+  const handleTextareaFocus = () => {
+    if (postText === 'Digite seu texto aqui...' && textareaRef.current) {
+      setPostText('');
+      adjustTextareaHeight();
+    }
+  };
+
+  // Handle textarea blur to reset placeholder if empty
+  const handleTextareaBlur = () => {
+    if (postText.trim() === '' && textareaRef.current) {
+      setPostText('Digite seu texto aqui...');
+      adjustTextareaHeight();
+    }
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -65,22 +91,45 @@ const PostSimulator = () => {
     }
   };
 
+  // Ensure textarea is properly sized when component mounts
+  React.useEffect(() => {
+    adjustTextareaHeight();
+  }, []);
+
   return (
     <div className="flex flex-col items-center w-full p-4">
       <Card className="facebook-post-card w-full max-w-[500px] overflow-hidden shadow-md rounded-lg mb-4">
         <div
           ref={postRef}
           className="bg-white p-4 flex flex-col"
-          style={{ border: 'none', borderRadius: '8px', overflow: 'hidden' }}
+          style={{ 
+            border: 'none', 
+            borderRadius: '8px', 
+            overflow: 'hidden',
+            position: 'relative'
+          }}
         >
           <div className="mb-3">
             <Textarea
+              ref={textareaRef}
               value={postText}
               onChange={handleTextChange}
+              onFocus={handleTextareaFocus}
+              onBlur={handleTextareaBlur}
               className="facebook-font border-none resize-none focus-visible:ring-0 p-0 text-base"
-              rows={4}
+              style={{ 
+                wordBreak: 'break-word', 
+                whiteSpace: 'pre-wrap',
+                minHeight: '80px',
+                lineHeight: '1.5',
+                fontFamily: 'Helvetica, Arial, sans-serif',
+                fontSize: '15px',
+                overflow: 'hidden',
+                textAlign: 'left',
+                width: '100%',
+                padding: '0'
+              }}
               placeholder="Digite seu texto aqui..."
-              style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
             />
           </div>
           
@@ -90,6 +139,7 @@ const PostSimulator = () => {
                 src={image} 
                 alt="Imagem do post" 
                 className="w-full h-auto object-contain"
+                style={{ maxWidth: '100%', display: 'block' }}
               />
             </div>
           )}
