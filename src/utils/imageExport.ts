@@ -51,6 +51,15 @@ export const exportAsImage = async (element: HTMLElement, fileName: string): Pro
       if (parent) parent.removeChild(zone);
     });
     
+    // Redimensionar imagens para se adequar à largura do texto
+    const images = clone.querySelectorAll('img');
+    images.forEach(img => {
+      img.style.maxWidth = '100%';
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      img.style.objectFit = 'contain';
+    });
+    
     // Adicionar o clone ao body para renderização
     document.body.appendChild(clone);
     

@@ -141,7 +141,11 @@ const PostSimulator = () => {
                 src={image} 
                 alt="Imagem do post" 
                 className="w-full h-auto object-contain"
-                style={{ maxWidth: '100%', display: 'block' }}
+                style={{ 
+                  maxWidth: '100%', 
+                  display: 'block',
+                  width: '100%'
+                }}
               />
             </div>
           ) : (
