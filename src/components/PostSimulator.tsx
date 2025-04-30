@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
@@ -12,6 +12,7 @@ const PostSimulator = () => {
   const [isDragging, setIsDragging] = useState(false);
   const postRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Adjust textarea height on input to match content
   const adjustTextareaHeight = () => {
@@ -91,13 +92,13 @@ const PostSimulator = () => {
     }
   };
 
-  // Ensure textarea is properly sized when component mounts
-  React.useEffect(() => {
+  // Ensure textarea is properly sized when component mounts or text changes
+  useEffect(() => {
     adjustTextareaHeight();
-  }, []);
+  }, [postText]);
 
   return (
-    <div className="flex flex-col items-center w-full p-4">
+    <div className="flex flex-col items-center w-full p-4" ref={containerRef}>
       <Card className="facebook-post-card w-full max-w-[500px] overflow-hidden shadow-md rounded-lg mb-4">
         <div
           ref={postRef}
@@ -123,11 +124,15 @@ const PostSimulator = () => {
                 minHeight: '80px',
                 lineHeight: '1.5',
                 fontFamily: 'Helvetica, Arial, sans-serif',
-                fontSize: '15px',
+                fontSize: '18px',
                 overflow: 'hidden',
                 textAlign: 'left',
                 width: '100%',
-                padding: '0'
+                padding: '0',
+                margin: '0',
+                border: 'none',
+                outline: 'none',
+                boxShadow: 'none'
               }}
               placeholder="Digite seu texto aqui..."
             />
