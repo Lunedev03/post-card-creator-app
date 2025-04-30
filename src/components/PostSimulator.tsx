@@ -94,9 +94,6 @@ const PostSimulator = () => {
 
   return (
     <div className="flex flex-col items-center w-full p-4">
-      <h1 className="text-2xl font-bold mb-2">Simulador de Post</h1>
-      <p className="text-gray-600 mb-6">Crie seu post estilo rede social e exporte como imagem</p>
-      
       <Card className="w-full max-w-[500px] overflow-hidden shadow-md rounded-lg mb-4 bg-white">
         <div
           ref={postRef}
