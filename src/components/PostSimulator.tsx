@@ -67,7 +67,7 @@ const PostSimulator = () => {
 
   return (
     <div className="flex flex-col items-center w-full p-4">
-      <Card className="w-full max-w-[500px] overflow-hidden shadow-md rounded-lg mb-4">
+      <Card className="facebook-post-card w-full max-w-[500px] overflow-hidden shadow-md rounded-lg mb-4">
         <div
           ref={postRef}
           className="bg-white p-4 flex flex-col"
@@ -76,7 +76,7 @@ const PostSimulator = () => {
             <Textarea
               value={postText}
               onChange={handleTextChange}
-              className="border-none resize-none focus-visible:ring-0 p-0 text-base"
+              className="facebook-font border-none resize-none focus-visible:ring-0 p-0 text-base"
               rows={4}
               placeholder="Digite seu texto aqui..."
             />
