@@ -28,48 +28,11 @@ export const exportAsImage = async (
       textarea.parentNode?.replaceChild(div, textarea);
     });
     
-    // Find edit fields and make them static text
-    const inputs = exportClone.querySelectorAll('input[type="text"]');
-    inputs.forEach((input) => {
-      const span = document.createElement('span');
-      span.innerText = (input as HTMLInputElement).value;
-      if ((input as HTMLInputElement).className.includes('font-bold')) {
-        span.style.fontWeight = 'bold';
-      }
-      if ((input as HTMLInputElement).className.includes('text-gray-500')) {
-        span.style.color = '#6b7280';
-      }
-      span.style.fontSize = (input as HTMLInputElement).className.includes('text-sm') ? '14px' : '16px';
-      input.parentNode?.replaceChild(span, input);
-    });
-    
-    // Remove checkboxes and labels
-    const checkboxes = exportClone.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-      const label = checkbox.nextElementSibling;
-      if (label) label.remove();
-      checkbox.remove();
-    });
-    
-    // Fix image grid positioning and ensure all images are loaded properly
-    const imageContainers = exportClone.querySelectorAll('.grid-cols-2');
-    imageContainers.forEach((container) => {
-      container.classList.add('gap-2');
-      container.classList.remove('gap-1');
-    });
-    
     // Ensure images are properly sized to match text width
     const images = exportClone.querySelectorAll('img');
     images.forEach((img) => {
       img.style.maxWidth = '100%';
       img.style.objectFit = 'cover';
-      
-      // Fix profile image
-      if (img.parentElement?.classList.contains('rounded-full')) {
-        img.style.width = '48px';
-        img.style.height = '48px';
-        img.style.borderRadius = '50%';
-      }
     });
     
     // Remove any buttons or unwanted UI elements

@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Download, FileImage, Save, X, CheckCircle } from 'lucide-react';
+import { Download, FileImage, Save, X } from 'lucide-react';
 import { exportAsImage } from '@/utils/imageExport';
 import { usePostHistory } from '@/contexts/PostHistoryContext';
 import { useToast } from '@/hooks/use-toast';
@@ -18,10 +18,6 @@ import {
 const PostSimulator = () => {
   const [postText, setPostText] = useState('O que você está pensando?');
   const [images, setImages] = useState<string[]>([]);
-  const [userName, setUserName] = useState('@_UsuarioX');
-  const [displayName, setDisplayName] = useState('Nome do Usuário');
-  const [date, setDate] = useState('Abr 29');
-  const [verified, setVerified] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const postRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -51,22 +47,6 @@ const PostSimulator = () => {
     if (postText.trim() === '' && textareaRef.current) {
       setPostText('O que você está pensando?');
     }
-  };
-
-  const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDisplayName(e.target.value);
-  };
-
-  const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserName(e.target.value);
-  };
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDate(e.target.value);
-  };
-
-  const toggleVerified = () => {
-    setVerified(!verified);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -125,7 +105,7 @@ const PostSimulator = () => {
 
   const handleExport = () => {
     if (postRef.current) {
-      exportAsImage(postRef.current, 'meu-tweet.png');
+      exportAsImage(postRef.current, 'meu-post.png');
     }
   };
 
@@ -133,11 +113,7 @@ const PostSimulator = () => {
     if (postText !== 'O que você está pensando?') {
       addPost({
         text: postText,
-        images: images,
-        userName,
-        displayName,
-        date,
-        verified
+        images: images.length > 0 ? images : undefined,
       });
       
       toast({
@@ -196,50 +172,6 @@ const PostSimulator = () => {
 
   return (
     <div className="flex flex-col items-center w-full p-4">
-      <div className="w-full max-w-[500px] mb-6">
-        <div className="bg-white rounded-lg p-4 shadow-md">
-          <div className="flex gap-4 items-center mb-3">
-            <input 
-              type="text" 
-              value={displayName} 
-              onChange={handleDisplayNameChange}
-              className="font-bold text-base border-b border-transparent hover:border-gray-300 focus:outline-none focus:border-blue-400 transition-colors"
-            />
-            <div className="flex items-center gap-1">
-              {verified && <CheckCircle size={16} className="text-blue-500 fill-blue-500" />}
-              <input 
-                type="text" 
-                value={userName} 
-                onChange={handleUserNameChange}
-                className="text-gray-500 text-sm border-b border-transparent hover:border-gray-300 focus:outline-none focus:border-blue-400 transition-colors"
-              />
-            </div>
-            <div className="text-gray-500 text-sm flex items-center gap-1">
-              · 
-              <input 
-                type="text" 
-                value={date} 
-                onChange={handleDateChange}
-                className="text-gray-500 text-sm w-[60px] border-b border-transparent hover:border-gray-300 focus:outline-none focus:border-blue-400 transition-colors"
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 mb-4">
-            <div className="inline-flex items-center">
-              <input 
-                type="checkbox" 
-                checked={verified} 
-                onChange={toggleVerified}
-                id="verified" 
-                className="mr-1"
-              />
-              <label htmlFor="verified" className="text-sm">Verificado</label>
-            </div>
-          </div>
-        </div>
-      </div>
-      
       <Card className="w-full max-w-[500px] overflow-hidden shadow-md rounded-lg mb-6 bg-white">
         <div
           ref={postRef}
@@ -250,88 +182,67 @@ const PostSimulator = () => {
             backgroundColor: '#ffffff'
           }}
         >
-          <div className="flex gap-3 mb-2">
-            <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-              <img 
-                src={`/lovable-uploads/577ba77b-cea9-44b6-b377-1fe0b8085149.png`}
-                alt="Profile" 
-                className="h-full w-full object-cover" 
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48';
-                }}
-              />
-            </div>
-            
-            <div className="flex flex-col flex-1">
-              <div className="flex items-center">
-                <span className="font-bold text-[15px]">{displayName}</span>
-                {verified && <CheckCircle size={16} className="text-blue-500 fill-blue-500 ml-1" />}
-                <span className="text-gray-500 text-[15px] ml-1">{userName} · {date}</span>
-              </div>
-              
-              <div className="mb-1">
-                <Textarea
-                  ref={textareaRef}
-                  value={postText}
-                  onChange={handleTextChange}
-                  onFocus={handleTextareaFocus}
-                  onBlur={handleTextareaBlur}
-                  className="border-none resize-none focus-visible:ring-0 p-0 text-base min-h-0"
-                  style={{
-                    wordBreak: 'break-word',
-                    whiteSpace: 'pre-wrap',
-                    lineHeight: '1.5',
-                    fontFamily: 'Arial, sans-serif',
-                    fontSize: '15px',
-                    overflow: 'hidden',
-                    textAlign: 'left',
-                    width: '100%',
-                    padding: '0',
-                    margin: '0',
-                    border: 'none',
-                    outline: 'none',
-                    boxShadow: 'none'
-                  }}
-                  placeholder="O que você está pensando?"
-                />
-              </div>
-              
-              {images.length > 0 ? (
-                <div className="relative mt-2">
-                  {getImageGrid()}
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {images.map((_, index) => (
-                      <Button 
-                        key={index} 
-                        variant="outline" 
-                        size="sm"
-                        className="p-1 h-8 w-8"
-                        onClick={() => removeImage(index)}
-                      >
-                        <X size={16} />
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className={`mt-2 flex items-center justify-center border-2 border-dashed rounded-lg ${
-                    isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                  } h-40 overflow-hidden cursor-pointer`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={handleImageUpload}
-                >
-                  <div className="flex flex-col items-center justify-center py-6 text-gray-500">
-                    <FileImage className="h-10 w-10 mb-2" />
-                    <p>Clique para fazer upload ou arraste e solte</p>
-                    <p className="text-xs text-gray-400">PNG, JPG, GIF (máximo 4 imagens)</p>
-                  </div>
-                </div>
-              )}
-            </div>
+          <div className="mb-4">
+            <Textarea
+              ref={textareaRef}
+              value={postText}
+              onChange={handleTextChange}
+              onFocus={handleTextareaFocus}
+              onBlur={handleTextareaBlur}
+              className="border-none resize-none focus-visible:ring-0 p-0 text-base min-h-0"
+              style={{
+                wordBreak: 'break-word',
+                whiteSpace: 'pre-wrap',
+                lineHeight: '1.5',
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '16px',
+                overflow: 'hidden',
+                textAlign: 'left',
+                width: '100%',
+                padding: '0',
+                margin: '0',
+                border: 'none',
+                outline: 'none',
+                boxShadow: 'none'
+              }}
+              placeholder="O que você está pensando?"
+            />
           </div>
+          
+          {images.length > 0 ? (
+            <div className="relative">
+              {getImageGrid()}
+              <div className="flex flex-wrap gap-2 mt-2">
+                {images.map((_, index) => (
+                  <Button 
+                    key={index} 
+                    variant="outline" 
+                    size="sm"
+                    className="p-1 h-8 w-8"
+                    onClick={() => removeImage(index)}
+                  >
+                    <X size={16} />
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div
+              className={`flex items-center justify-center border-2 border-dashed rounded-lg ${
+                isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+              } h-40 overflow-hidden cursor-pointer`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={handleImageUpload}
+            >
+              <div className="flex flex-col items-center justify-center py-6 text-gray-500">
+                <FileImage className="h-10 w-10 mb-2" />
+                <p>Clique para fazer upload ou arraste e solte</p>
+                <p className="text-xs text-gray-400">PNG, JPG, GIF (máximo 4 imagens)</p>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 
