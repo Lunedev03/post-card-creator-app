@@ -1,6 +1,6 @@
 
 import React from 'react';
-import PostSimulator from '@/components/PostSimulator';
+import PostSimulator from '@/components/post/PostSimulator';
 import Header from '@/components/Header';
 
 const Index = () => {
