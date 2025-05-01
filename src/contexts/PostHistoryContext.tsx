@@ -4,8 +4,11 @@ import React, { createContext, useState, useContext, useEffect, ReactNode } from
 export type Post = {
   id: string;
   text: string;
-  image: string | null;
+  images?: string[]; // Changed from image: string | null to support multiple images
+  userName?: string;
+  displayName?: string;
   date: string;
+  verified?: boolean;
 };
 
 interface PostHistoryContextType {

@@ -45,17 +45,36 @@ const History = () => {
     textElement.textContent = post.text;
     textElement.style.fontSize = '18px';
     textElement.style.lineHeight = '1.5';
-    textElement.style.marginBottom = post.image ? '12px' : '0';
+    textElement.style.marginBottom = post.images && post.images.length > 0 ? '12px' : '0';
     tempDiv.appendChild(textElement);
     
-    // Add image if exists
-    if (post.image) {
-      const imgElement = document.createElement('img');
-      imgElement.src = post.image;
-      imgElement.style.width = '100%';
-      imgElement.style.borderRadius = '8px';
-      imgElement.style.display = 'block';
-      tempDiv.appendChild(imgElement);
+    // Add images if they exist
+    if (post.images && post.images.length > 0) {
+      const imageContainer = document.createElement('div');
+      
+      if (post.images.length === 1) {
+        const img = document.createElement('img');
+        img.src = post.images[0];
+        img.style.width = '100%';
+        img.style.borderRadius = '8px';
+        img.style.display = 'block';
+        imageContainer.appendChild(img);
+      } else {
+        imageContainer.style.display = 'grid';
+        imageContainer.style.gridTemplateColumns = post.images.length >= 2 ? '1fr 1fr' : '1fr';
+        imageContainer.style.gap = '8px';
+        
+        post.images.forEach(imgSrc => {
+          const img = document.createElement('img');
+          img.src = imgSrc;
+          img.style.width = '100%';
+          img.style.borderRadius = '8px';
+          img.style.display = 'block';
+          imageContainer.appendChild(img);
+        });
+      }
+      
+      tempDiv.appendChild(imageContainer);
     }
     
     // Append to body temporarily (hidden)
@@ -116,13 +135,25 @@ const History = () => {
                 </p>
               </div>
               
-              {post.image && (
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    src={post.image} 
-                    alt="Imagem do post" 
-                    className="w-full h-full object-cover"
-                  />
+              {post.images && post.images.length > 0 && (
+                <div className={`${post.images.length === 1 ? 'h-48' : 'grid grid-cols-2 gap-1 p-2'} overflow-hidden`}>
+                  {post.images.length === 1 ? (
+                    <img 
+                      src={post.images[0]} 
+                      alt="Imagem do post" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    post.images.map((img, idx) => (
+                      <div key={idx} className="aspect-square overflow-hidden">
+                        <img 
+                          src={img} 
+                          alt={`Imagem ${idx+1} do post`} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
               
