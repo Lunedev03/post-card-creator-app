@@ -82,13 +82,13 @@ const AiAssistant = () => {
   };
   
   return (
-    <Card className="bg-white flex flex-col h-full overflow-hidden">
-      <div className="p-3 bg-blue-500 text-white flex items-center gap-2">
+    <Card className="bg-[#1E1E1E] border border-white/10 flex flex-col h-full overflow-hidden">
+      <div className="p-3 bg-[#252525] border-b border-white/10 text-white flex items-center gap-2">
         <MessageCircle size={18} />
         <h3 className="font-medium">Assistente IA</h3>
       </div>
       
-      <ScrollArea className="flex-grow p-3">
+      <ScrollArea className="flex-grow p-3 text-white">
         <div className="flex flex-col space-y-3">
           {messages.map((msg, index) => (
             <div
@@ -98,8 +98,8 @@ const AiAssistant = () => {
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
                   msg.sender === 'user'
-                    ? 'bg-blue-500 text-white rounded-br-none'
-                    : 'bg-gray-100 rounded-bl-none'
+                    ? 'bg-purple-700 text-white rounded-br-none'
+                    : 'bg-[#333333] rounded-bl-none'
                 }`}
               >
                 <p className="text-sm">{msg.text}</p>
@@ -113,15 +113,15 @@ const AiAssistant = () => {
         </div>
       </ScrollArea>
       
-      <form onSubmit={handleSend} className="p-3 border-t">
+      <form onSubmit={handleSend} className="p-3 border-t border-white/10">
         <div className="flex gap-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Escreva uma mensagem..."
-            className="flex-grow"
+            className="flex-grow bg-[#252525] border-white/10 text-white"
           />
-          <Button type="submit" disabled={!input.trim()}>
+          <Button type="submit" disabled={!input.trim()} className="bg-purple-700 hover:bg-purple-600">
             Enviar
           </Button>
         </div>
