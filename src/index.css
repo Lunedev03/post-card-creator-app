@@ -171,6 +171,16 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
+/* Added hover-scale animation */
+.hover-scale {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
 /* Mobile specific styles */
 @media (max-width: 767px) {
   .facebook-post-card {
@@ -178,4 +188,9 @@
     max-width: 100%;
     margin: 0 auto;
   }
+}
+
+/* Animate fade-in */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
 }

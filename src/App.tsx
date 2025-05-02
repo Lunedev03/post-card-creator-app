@@ -20,9 +20,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <div className="min-h-screen bg-[#121212] flex flex-col">
+          <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white flex flex-col">
             <TopBar />
-            <div className="flex-grow pt-14"> {/* Padding for fixed TopBar */}
+            <div className="flex-grow pt-14 pb-16"> {/* Padding for TopBar and NavigationBar */}
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/history" element={<History />} />
