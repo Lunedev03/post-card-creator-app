@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, History } from 'lucide-react';
+import { LayoutGrid, History } from 'lucide-react';
 
 const NavigationBar = () => {
   const location = useLocation();
@@ -16,7 +16,7 @@ const NavigationBar = () => {
             isActive('/') ? 'text-white' : 'text-gray-400 hover:text-white'
           }`}
         >
-          <LayoutDashboard size={24} />
+          <LayoutGrid size={24} />
           <span className="text-xs">Editor</span>
         </Link>
         
