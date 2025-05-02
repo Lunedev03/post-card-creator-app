@@ -8,12 +8,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-800 to-green-800 pb-20">
       <div className="container mx-auto px-4 py-6">
-        <div className="text-5xl font-bold text-white text-center mb-12 mt-10">
-          The AI Post Editor
-        </div>
-        <div className="text-center text-white mb-12">
-          Built to make you extraordinarily productive, create amazing social media posts with AI.
-        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
           <div className="md:col-span-2">
             <PostSimulator />

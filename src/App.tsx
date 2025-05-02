@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import History from "./pages/History";
 import NotFound from "./pages/NotFound";
 import NavigationBar from "./components/NavigationBar";
+import TopBar from "./components/TopBar";
 import { PostHistoryProvider } from "./contexts/PostHistoryContext";
 
 const queryClient = new QueryClient();
@@ -20,11 +21,14 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <div className="min-h-screen bg-[#121212]">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/history" element={<History />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <TopBar />
+            <div className="pt-14"> {/* Add padding to account for the top bar */}
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/history" element={<History />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
             <NavigationBar />
           </div>
         </BrowserRouter>
