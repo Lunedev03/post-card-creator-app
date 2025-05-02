@@ -8,31 +8,27 @@ const NavigationBar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white shadow-md w-full px-4 py-4 mb-6">
-      <div className="container mx-auto flex justify-between items-center">
-        <div className="text-xl font-bold text-indigo-900">PostSimulator</div>
+    <nav className="bg-white shadow-md w-full fixed bottom-0 left-0 right-0 px-4 py-3 z-50">
+      <div className="container mx-auto flex justify-around items-center">
+        <Link 
+          to="/" 
+          className={`flex flex-col items-center gap-1 px-4 py-1 rounded-lg transition-colors ${
+            isActive('/') ? 'text-indigo-900' : 'text-gray-600 hover:text-indigo-900'
+          }`}
+        >
+          <LayoutDashboard size={24} />
+          <span className="text-xs">Editor</span>
+        </Link>
         
-        <div className="flex space-x-4">
-          <Link 
-            to="/" 
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-              isActive('/') ? 'bg-indigo-100 text-indigo-900' : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <LayoutDashboard size={18} />
-            <span>Editor</span>
-          </Link>
-          
-          <Link 
-            to="/history" 
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-              isActive('/history') ? 'bg-indigo-100 text-indigo-900' : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <History size={18} />
-            <span>Histórico</span>
-          </Link>
-        </div>
+        <Link 
+          to="/history" 
+          className={`flex flex-col items-center gap-1 px-4 py-1 rounded-lg transition-colors ${
+            isActive('/history') ? 'text-indigo-900' : 'text-gray-600 hover:text-indigo-900'
+          }`}
+        >
+          <History size={24} />
+          <span className="text-xs">Histórico</span>
+        </Link>
       </div>
     </nav>
   );

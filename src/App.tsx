@@ -20,12 +20,12 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <div className="min-h-screen bg-gray-100">
-            <NavigationBar />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/history" element={<History />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <NavigationBar />
           </div>
         </BrowserRouter>
       </TooltipProvider>
