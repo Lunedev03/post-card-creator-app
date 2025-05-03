@@ -31,6 +31,15 @@ const PostSimulator = () => {
   const removeImage = (indexToRemove: number) => {
     setImages(prevImages => prevImages.filter((_, index) => index !== indexToRemove));
   };
+  
+  const handleReorderImages = (newOrder: string[]) => {
+    setImages(newOrder);
+    toast({
+      title: "Imagens reordenadas!",
+      description: "A ordem das imagens foi atualizada.",
+      duration: 1500,
+    });
+  };
 
   const handleExport = () => {
     if (postRef.current) {
@@ -92,7 +101,11 @@ const PostSimulator = () => {
           <PostTextInput value={postText} onChange={handleTextChange} />
           
           {images.length > 0 ? (
-            <ImageGrid images={images} onRemoveImage={removeImage} />
+            <ImageGrid 
+              images={images} 
+              onRemoveImage={removeImage} 
+              onReorderImages={handleReorderImages}
+            />
           ) : (
             <div 
               className="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 dark:hover:border-gray-600 transition-all mt-3"
