@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sun, Moon, FileImage } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -8,11 +8,32 @@ import { Button } from '@/components/ui/button';
 const TopBar = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const [isDarkMode, setIsDarkMode] = React.useState(true);
+  const [isDarkMode, setIsDarkMode] = React.useState(() => {
+    // Check localStorage or system preference
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return savedTheme ? savedTheme === 'dark' : systemPrefersDark;
+  });
+
+  useEffect(() => {
+    // Apply theme when component mounts and when theme changes
+    applyTheme(isDarkMode);
+  }, [isDarkMode]);
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
-    // In a real implementation, we would apply the theme change here
+  };
+  
+  const applyTheme = (dark: boolean) => {
+    const root = window.document.documentElement;
+    
+    if (dark) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
   };
   
   return (
@@ -28,7 +49,8 @@ const TopBar = () => {
             variant="ghost" 
             size="icon" 
             onClick={toggleTheme}
-            className="text-gray-400 hover:text-white"
+            className="text-gray-400 hover:text-white transition-colors"
+            aria-label={isDarkMode ? "Mudar para modo claro" : "Mudar para modo escuro"}
           >
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </Button>
