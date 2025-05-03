@@ -8,22 +8,26 @@ import { Card } from '@/components/ui/card';
 const Index = () => {
   return (
     <div className="min-h-screen pb-20">
-      <div className="container mx-auto px-4 py-4 grid grid-cols-1 md:grid-cols-12 gap-4">
-        {/* Post simulator - central */}
-        <Card className="md:col-span-6 md:col-start-4 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden">
-          <PostSimulator />
-        </Card>
+      <div className="container mx-auto px-4 py-4">
+        {/* Main white card containing post simulator and emoji picker */}
+        <div className="bg-white dark:bg-gray-950 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-0">
+            {/* Post simulator - left side */}
+            <div className="md:col-span-8 border-r border-gray-200 dark:border-gray-800">
+              <PostSimulator />
+            </div>
+            
+            {/* Emoji Picker - right side inside the white card */}
+            <div className="md:col-span-4">
+              <EmojiPicker />
+            </div>
+          </div>
+        </div>
         
-        {/* Right sidebar with AI Assistant and Emoji Picker */}
-        <div className="md:col-span-3 grid grid-cols-1 gap-4">
-          {/* AI Assistant */}
-          <Card className="shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden h-[400px]">
+        {/* AI Assistant - outside the white card */}
+        <div className="mt-4">
+          <Card className="shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden">
             <AiAssistant />
-          </Card>
-          
-          {/* Emoji Picker */}
-          <Card className="shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden h-[280px]">
-            <EmojiPicker />
           </Card>
         </div>
       </div>

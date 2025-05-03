@@ -57,11 +57,11 @@ const EmojiPicker = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-3 border-b border-gray-200 dark:border-gray-800">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
         <h3 className="font-medium text-gray-800 dark:text-white">Emojis</h3>
       </div>
       
-      <div className="p-3">
+      <div className="p-4">
         <div className="relative mb-3">
           <Input
             placeholder="Buscar emoji..."
@@ -89,8 +89,8 @@ const EmojiPicker = () => {
         </div>
       </div>
       
-      <ScrollArea className="flex-1 pb-3 px-3">
-        <div className="grid grid-cols-8 gap-1">
+      <ScrollArea className="flex-1 pb-3 px-4">
+        <div className="grid grid-cols-7 gap-1">
           {filteredEmojis.map((emoji, index) => (
             <Button
               key={index}
@@ -99,7 +99,7 @@ const EmojiPicker = () => {
               className="h-8 w-8 p-0 rounded-md font-emoji"
               onClick={() => handleCopyEmoji(emoji)}
             >
-              <span style={{ fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}>{emoji}</span>
+              <span className="emoji-fix">{emoji}</span>
             </Button>
           ))}
         </div>
