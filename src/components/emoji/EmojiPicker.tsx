@@ -5,12 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
+// Expanded emoji set for better coverage
 const emojis = [
   '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', 
   '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩',
   '😘', '😗', '☺️', '😚', '😙', '🥲', '😋', '😛',
   '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔',
+  '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
+  '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕',
+  '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯',
+  '🤠', '🥳', '😎', '🤓', '🧐', '😕', '😟', '🙁',
+  '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧',
+  '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣',
+  '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠',
 ];
 
 const categories = [
@@ -62,7 +71,7 @@ const EmojiPicker = () => {
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
       </div>
       
-      <div className="flex justify-between mb-4 overflow-x-auto pb-2">
+      <div className="flex justify-between mb-4 overflow-x-auto pb-2 scrollbar-thin">
         {categories.map((category, index) => (
           <Button
             key={index}
@@ -78,18 +87,20 @@ const EmojiPicker = () => {
         ))}
       </div>
       
-      <div className="grid grid-cols-8 gap-1">
-        {filteredEmojis.map((emoji, index) => (
-          <Button
-            key={index}
-            variant="ghost"
-            className="h-9 text-xl relative hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={() => handleCopyEmoji(emoji)}
-          >
-            {emoji}
-          </Button>
-        ))}
-      </div>
+      <ScrollArea className="h-[180px] pr-2">
+        <div className="grid grid-cols-8 gap-1">
+          {filteredEmojis.map((emoji, index) => (
+            <Button
+              key={index}
+              variant="ghost"
+              className="h-9 text-xl relative hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={() => handleCopyEmoji(emoji)}
+            >
+              <span className="emoji-fix">{emoji}</span>
+            </Button>
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 };

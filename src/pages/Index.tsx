@@ -25,7 +25,7 @@ const Index = () => {
           </Card>
           
           {/* Emoji Picker */}
-          <Card className="shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden">
+          <Card className="shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden h-[280px]">
             <EmojiPicker />
           </Card>
         </div>
