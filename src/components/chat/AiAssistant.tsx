@@ -199,7 +199,7 @@ const AiAssistant = () => {
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
                   msg.sender === 'user'
-                    ? 'bg-blue-500 text-white rounded-br-none'
+                    ? 'bg-purple-500 text-white rounded-br-none'
                     : 'bg-gray-100 dark:bg-gray-800 rounded-bl-none text-gray-800 dark:text-white'
                 }`}
               >

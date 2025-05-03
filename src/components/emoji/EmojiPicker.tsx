@@ -1,25 +1,28 @@
 
 import React, { useState } from 'react';
-import { Copy, Check, Clock, Search } from 'lucide-react';
+import { Clock, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-// Expanded emoji set for better coverage
+// Expanded emoji set
 const emojis = [
   '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', 
   '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩',
   '😘', '😗', '☺️', '😚', '😙', '🥲', '😋', '😛',
   '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔',
-  '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
-  '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕',
-  '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯',
-  '🤠', '🥳', '😎', '🤓', '🧐', '😕', '😟', '🙁',
-  '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧',
-  '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣',
-  '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠',
+  '🫡', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒',
+  '🙄', '😬', '😮‍💨', '🤥', '😌', '😔', '😪', '🤤',
+  '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵',
+  '🥶', '🥴', '😵', '😵‍💫', '🤯', '🤠', '🥳', '🥸',
+  '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️', '😮',
+  '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰',
+  '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓',
+  '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '😈',
+  '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻',
+  '👽', '👾', '🤖', '😺', '😸', '😹', '😻', '😼',
+  '😽', '🙀', '😿', '😾', '🙈', '🙉', '🙊'
 ];
 
 const categories = [
@@ -35,22 +38,17 @@ const categories = [
 ];
 
 const EmojiPicker = () => {
-  const [copiedEmoji, setCopiedEmoji] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
   const handleCopyEmoji = (emoji: string) => {
     navigator.clipboard.writeText(emoji);
-    setCopiedEmoji(emoji);
     
     toast({
       title: "Emoji copiado!",
       description: `${emoji} foi copiado para a área de transferência.`,
+      duration: 1500,
     });
-    
-    setTimeout(() => {
-      setCopiedEmoji(null);
-    }, 2000);
   };
 
   const filteredEmojis = searchQuery 
@@ -58,45 +56,50 @@ const EmojiPicker = () => {
     : emojis;
 
   return (
-    <div className="p-4 h-full">
-      <h3 className="font-semibold mb-3 text-lg">Emojis</h3>
-      
-      <div className="relative mb-3">
-        <Input
-          placeholder="Buscar emoji..."
-          className="pl-9"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+    <div className="flex flex-col h-full">
+      <div className="p-3 border-b border-gray-200 dark:border-gray-800">
+        <h3 className="font-medium text-gray-800 dark:text-white">Emojis</h3>
       </div>
       
-      <div className="flex justify-between mb-4 overflow-x-auto pb-2 scrollbar-thin">
-        {categories.map((category, index) => (
-          <Button
-            key={index}
-            variant="ghost"
-            size="sm"
-            className="min-w-min px-2"
-          >
-            {typeof category.icon === 'string' 
-              ? <span className="text-lg">{category.icon}</span> 
-              : category.icon
-            }
-          </Button>
-        ))}
+      <div className="p-3">
+        <div className="relative mb-3">
+          <Input
+            placeholder="Buscar emoji..."
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+        </div>
+        
+        <div className="flex justify-between mb-3 overflow-x-auto pb-2 gap-1 scrollbar-thin">
+          {categories.map((category, index) => (
+            <Button
+              key={index}
+              variant="ghost"
+              size="icon"
+              className="min-w-min rounded-full h-8 w-8"
+            >
+              {typeof category.icon === 'string' 
+                ? <span className="text-lg emoji-fix">{category.icon}</span> 
+                : category.icon
+              }
+            </Button>
+          ))}
+        </div>
       </div>
       
-      <ScrollArea className="h-[180px] pr-2">
+      <ScrollArea className="flex-1 pb-3 px-3">
         <div className="grid grid-cols-8 gap-1">
           {filteredEmojis.map((emoji, index) => (
             <Button
               key={index}
               variant="ghost"
-              className="h-9 text-xl relative hover:bg-gray-100 dark:hover:bg-gray-800"
+              size="icon"
+              className="h-8 w-8 p-0 rounded-md font-emoji"
               onClick={() => handleCopyEmoji(emoji)}
             >
-              <span className="emoji-fix">{emoji}</span>
+              <span style={{ fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}>{emoji}</span>
             </Button>
           ))}
         </div>

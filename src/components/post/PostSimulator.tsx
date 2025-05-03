@@ -1,7 +1,6 @@
 
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Download, FileImage, Save } from 'lucide-react';
 import { exportAsImage } from '@/utils/imageExport';
 import { usePostHistory } from '@/contexts/PostHistoryContext';
@@ -85,22 +84,22 @@ const PostSimulator = () => {
 
   return (
     <div className="flex flex-col items-center w-full p-4">
-      <Card className="w-full max-w-[500px] overflow-hidden shadow-sm rounded-lg mb-6 bg-white dark:bg-gray-950">
-        <div
-          ref={postRef}
-          className="p-4 flex flex-col"
-        >
+      <div
+        ref={postRef}
+        className="w-full rounded-lg mb-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 overflow-hidden"
+      >
+        <div className="p-4">
           <PostTextInput value={postText} onChange={handleTextChange} />
           
           {images.length > 0 ? (
             <ImageGrid images={images} onRemoveImage={removeImage} />
           ) : (
             <div 
-              className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 dark:hover:border-gray-600 transition-all mt-2"
+              className="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 dark:hover:border-gray-600 transition-all mt-3"
               onClick={handleImageUpload}
             >
               <FileImage className="h-10 w-10 text-gray-400 mb-2" />
-              <p className="text-center text-gray-500 dark:text-gray-400">
+              <p className="text-center text-gray-500 dark:text-gray-400 text-sm">
                 Clique para fazer upload ou arraste e solte
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
@@ -109,12 +108,12 @@ const PostSimulator = () => {
             </div>
           )}
         </div>
-      </Card>
+      </div>
 
-      <div className="flex w-full max-w-[500px] gap-2">
+      <div className="flex w-full gap-2 mb-4">
         <Button 
           onClick={handleExport} 
-          className="flex-1 bg-blue-500 hover:bg-blue-600"
+          className="flex-1 bg-blue-500 hover:bg-blue-600 text-sm"
         >
           <Download className="h-4 w-4 mr-2" />
           Exportar como imagem
@@ -123,7 +122,7 @@ const PostSimulator = () => {
         <Button 
           onClick={handleSaveToHistory}
           variant="outline" 
-          className="flex-1 border-blue-500 text-blue-500"
+          className="flex-1 border-blue-500 text-blue-500 text-sm"
         >
           <Save className="h-4 w-4 mr-2" />
           Salvar no histórico
@@ -134,7 +133,7 @@ const PostSimulator = () => {
         <Button 
           onClick={handleImageUpload}
           variant="outline" 
-          className="mt-4 w-full max-w-[500px] border-blue-500 text-blue-500"
+          className="w-full border-blue-500 text-blue-500 text-sm"
         >
           <FileImage className="h-4 w-4 mr-2" />
           Adicionar mais imagens {images.length}/4
