@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, Image } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -17,6 +17,10 @@ interface ImageGridProps {
 
 const ImageGrid = ({ images, onRemoveImage, onReorderImages }: ImageGridProps) => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [centeringIndex, setCenteringIndex] = useState<number | null>(null);
+  const [centerPosition, setCenterPosition] = useState<{ x: number, y: number }[]>(
+    images.map(() => ({ x: 50, y: 50 }))
+  );
   
   if (images.length === 0) return null;
   
@@ -43,6 +47,14 @@ const ImageGrid = ({ images, onRemoveImage, onReorderImages }: ImageGridProps) =
     // Insert it at the new position
     newImages.splice(targetIndex, 0, draggedImage);
     
+    // Update center positions to match the new image order
+    const newCenterPositions = [...centerPosition];
+    const draggedPosition = newCenterPositions[draggedIndex];
+    newCenterPositions.splice(draggedIndex, 1);
+    newCenterPositions.splice(targetIndex, 0, draggedPosition);
+    
+    setCenterPosition(newCenterPositions);
+    
     if (onReorderImages) {
       onReorderImages(newImages);
     }
@@ -50,15 +62,60 @@ const ImageGrid = ({ images, onRemoveImage, onReorderImages }: ImageGridProps) =
     setDraggedIndex(null);
   };
   
+  const handleDoubleClick = (index: number) => {
+    setCenteringIndex(index);
+  };
+
+  const handleImageClick = (e: React.MouseEvent, index: number) => {
+    if (centeringIndex === index) {
+      // Calculate the click position relative to the image dimensions
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      
+      // Update center position for this image
+      const newCenterPositions = [...centerPosition];
+      newCenterPositions[index] = { x, y };
+      setCenterPosition(newCenterPositions);
+      
+      // Show confirmation toast
+      const event = new CustomEvent('image-centered', { 
+        detail: { message: 'Imagem centralizada!' } 
+      });
+      window.dispatchEvent(event);
+    }
+  };
+
+  const exitCenteringMode = () => {
+    setCenteringIndex(null);
+  };
+  
   if (images.length === 1) {
     return (
       <div className="relative">
         <div className="mt-3 overflow-hidden rounded-xl">
-          <img 
-            src={images[0]} 
-            alt="Imagem do post" 
-            className="w-full h-auto object-cover"
-          />
+          <div 
+            className={`relative ${centeringIndex === 0 ? 'cursor-crosshair bg-black/5' : ''}`}
+            onDoubleClick={() => handleDoubleClick(0)}
+            onClick={(e) => handleImageClick(e, 0)}
+          >
+            <img 
+              src={images[0]} 
+              alt="Imagem do post" 
+              className="w-full h-auto object-cover"
+              style={centeringIndex === 0 || centerPosition[0] ? {
+                objectPosition: `${centerPosition[0].x}% ${centerPosition[0].y}%`
+              } : {}}
+            />
+            {centeringIndex === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                <div className="bg-white p-2 rounded shadow">
+                  <p className="text-sm">Clique para centralizar</p>
+                  <Button size="sm" onClick={exitCenteringMode}>Concluído</Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex flex-wrap gap-2 mt-2">
           <Button 
@@ -69,6 +126,23 @@ const ImageGrid = ({ images, onRemoveImage, onReorderImages }: ImageGridProps) =
           >
             <X size={16} />
           </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="p-1 h-8 w-8"
+                  onClick={() => handleDoubleClick(0)}
+                >
+                  <Image size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Centralizar imagem</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     );
@@ -87,21 +161,46 @@ const ImageGrid = ({ images, onRemoveImage, onReorderImages }: ImageGridProps) =
                       images.length === 3 && index === 0 ? 'row-span-2' : ''
                     } ${
                       images.length === 4 ? 'aspect-square' : ''
-                    } cursor-move border-2 ${draggedIndex === index ? 'border-blue-500' : 'border-transparent'} hover:border-gray-300`}
-                    draggable
-                    onDragStart={() => handleDragStart(index)}
+                    } ${
+                      centeringIndex === index 
+                        ? 'cursor-crosshair bg-black/5' 
+                        : 'cursor-move'
+                    } border-2 ${
+                      draggedIndex === index 
+                        ? 'border-blue-500' 
+                        : centeringIndex === index 
+                          ? 'border-green-500' 
+                          : 'border-transparent'
+                    } hover:border-gray-300`}
+                    draggable={centeringIndex === null}
+                    onDragStart={() => centeringIndex === null && handleDragStart(index)}
                     onDragOver={handleDragOver}
                     onDrop={() => handleDrop(index)}
+                    onDoubleClick={() => handleDoubleClick(index)}
+                    onClick={(e) => handleImageClick(e, index)}
                   >
                     <img 
                       src={img} 
                       alt={`Imagem ${index + 1} do post`} 
                       className="w-full h-full object-cover rounded-md"
+                      style={centerPosition[index] ? {
+                        objectPosition: `${centerPosition[index].x}% ${centerPosition[index].y}%`
+                      } : {}}
                     />
+                    {centeringIndex === index && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="bg-white p-2 rounded shadow">
+                          <p className="text-sm">Clique para centralizar</p>
+                          <Button size="sm" onClick={exitCenteringMode}>Concluído</Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Arraste para reordenar</p>
+                  {centeringIndex === index 
+                    ? 'Clique para definir o centro da imagem'
+                    : 'Arraste para reordenar ou clique duas vezes para centralizar'}
                 </TooltipContent>
               </Tooltip>
             ))}
@@ -109,15 +208,31 @@ const ImageGrid = ({ images, onRemoveImage, onReorderImages }: ImageGridProps) =
         </div>
         <div className="flex flex-wrap gap-2 mt-2">
           {images.map((_, index) => (
-            <Button 
-              key={index} 
-              variant="outline" 
-              size="sm"
-              className="p-1 h-8 w-8"
-              onClick={() => onRemoveImage(index)}
-            >
-              <X size={16} />
-            </Button>
+            <React.Fragment key={index}>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="p-1 h-8 w-8"
+                onClick={() => onRemoveImage(index)}
+              >
+                <X size={16} />
+              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="p-1 h-8 w-8"
+                    onClick={() => handleDoubleClick(index)}
+                  >
+                    <Image size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Centralizar imagem</p>
+                </TooltipContent>
+              </Tooltip>
+            </React.Fragment>
           ))}
         </div>
       </div>
