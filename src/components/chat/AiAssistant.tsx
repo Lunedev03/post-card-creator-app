@@ -3,13 +3,61 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageCircle, Send } from 'lucide-react';
+import { MessageCircle, Send, Settings } from 'lucide-react';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 type Message = {
   text: string;
   sender: 'user' | 'ai';
   timestamp: Date;
 };
+
+type LLMModel = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+const llmModels: LLMModel[] = [
+  {
+    id: 'gpt-4o-mini',
+    name: 'GPT-4o Mini',
+    description: 'Rápido e eficiente para tarefas comuns',
+  },
+  {
+    id: 'gpt-4o',
+    name: 'GPT-4o',
+    description: 'Modelo mais poderoso com capacidade de processamento de imagens',
+  },
+  {
+    id: 'gpt-4.5-preview',
+    name: 'GPT-4.5 Preview',
+    description: 'Versão prévia do poderoso GPT-4.5',
+  },
+  {
+    id: 'llama-3.1-8b',
+    name: 'Llama 3.1 (8B)',
+    description: 'Modelo open source de 8 bilhões de parâmetros',
+  },
+  {
+    id: 'llama-3.1-70b',
+    name: 'Llama 3.1 (70B)',
+    description: 'Modelo open source de 70 bilhões de parâmetros',
+  },
+];
 
 const initialMessages: Message[] = [
   {
@@ -22,6 +70,8 @@ const initialMessages: Message[] = [
 const AiAssistant = () => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
+  const [selectedModel, setSelectedModel] = useState<string>('gpt-4o-mini');
+  const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const scrollToBottom = () => {
@@ -48,8 +98,11 @@ const AiAssistant = () => {
     
     // Simulate AI response after a short delay
     setTimeout(() => {
+      const model = llmModels.find(m => m.id === selectedModel);
+      const modelPrefix = model ? `[${model.name}]: ` : '';
+      
       const aiResponse: Message = {
-        text: getAiResponse(input),
+        text: modelPrefix + getAiResponse(input),
         sender: 'ai',
         timestamp: new Date(),
       };
@@ -80,11 +133,60 @@ const AiAssistant = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
+  const handleModelChange = (value: string) => {
+    setSelectedModel(value);
+    
+    // Add system message about model change
+    const modelName = llmModels.find(m => m.id === value)?.name || value;
+    setMessages(prev => [
+      ...prev,
+      {
+        text: `Modelo alterado para ${modelName}`,
+        sender: 'ai',
+        timestamp: new Date(),
+      }
+    ]);
+  };
+  
   return (
     <div className="flex flex-col h-full">
-      <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
-        <MessageCircle size={18} className="text-blue-500" />
-        <h3 className="font-medium text-gray-800 dark:text-white">Assistente IA</h3>
+      <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageCircle size={18} className="text-blue-500" />
+          <h3 className="font-medium text-gray-800 dark:text-white">Assistente IA</h3>
+        </div>
+        
+        <Dialog open={isModelDialogOpen} onOpenChange={setIsModelDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Settings size={16} className="text-gray-600 dark:text-gray-400" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Selecionar Modelo de IA</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              {llmModels.map((model) => (
+                <div 
+                  key={model.id} 
+                  className={`p-3 border rounded-md cursor-pointer transition-colors
+                    ${selectedModel === model.id 
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' 
+                      : 'border-gray-200 hover:border-gray-300 dark:border-gray-800 dark:hover:border-gray-700'
+                    }`}
+                  onClick={() => {
+                    handleModelChange(model.id);
+                    setIsModelDialogOpen(false);
+                  }}
+                >
+                  <h4 className="font-medium">{model.name}</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{model.description}</p>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
       
       <ScrollArea className="flex-grow p-3">
@@ -116,8 +218,23 @@ const AiAssistant = () => {
         </div>
       </ScrollArea>
       
-      <form onSubmit={handleSend} className="p-3 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex gap-2">
+      <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 mb-2">
+          <Select value={selectedModel} onValueChange={handleModelChange}>
+            <SelectTrigger className="h-8 text-xs bg-gray-50 dark:bg-gray-900">
+              <SelectValue placeholder="Selecionar modelo" />
+            </SelectTrigger>
+            <SelectContent>
+              {llmModels.map((model) => (
+                <SelectItem key={model.id} value={model.id}>
+                  {model.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <form onSubmit={handleSend} className="flex gap-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -132,8 +249,8 @@ const AiAssistant = () => {
           >
             <Send size={18} />
           </Button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };
