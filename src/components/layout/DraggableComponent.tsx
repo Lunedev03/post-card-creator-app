@@ -5,7 +5,7 @@ import { Move, ChevronsUpDown } from 'lucide-react';
 interface DraggableComponentProps {
   children: React.ReactNode;
   initialPosition: { x: number; y: number };
-  initialSize?: { width: number; height: number };
+  initialSize: { width: number; height: number };
   onPositionChange: (position: { x: number; y: number }) => void;
   onSizeChange?: (size: { width: number; height: number }) => void;
   className?: string;
@@ -14,7 +14,7 @@ interface DraggableComponentProps {
 const DraggableComponent = ({
   children,
   initialPosition,
-  initialSize = { width: 300, height: 'auto' },
+  initialSize = { width: 300, height: 400 },
   onPositionChange,
   onSizeChange,
   className = '',
@@ -51,8 +51,8 @@ const DraggableComponent = ({
     setIsResizing(true);
     initialMousePosition.current = { x: e.clientX, y: e.clientY };
     resizeStartSize.current = { 
-      width: typeof size.width === 'number' ? size.width : 300,
-      height: typeof size.height === 'number' ? size.height : 300
+      width: size.width,
+      height: size.height
     };
     e.preventDefault();
   };
@@ -63,8 +63,8 @@ const DraggableComponent = ({
       const touch = e.touches[0];
       initialMousePosition.current = { x: touch.clientX, y: touch.clientY };
       resizeStartSize.current = { 
-        width: typeof size.width === 'number' ? size.width : 300,
-        height: typeof size.height === 'number' ? size.height : 300
+        width: size.width,
+        height: size.height
       };
     }
   };
@@ -157,8 +157,8 @@ const DraggableComponent = ({
       className={`absolute ${className}`}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
-        width: typeof size.width === 'number' ? `${size.width}px` : size.width,
-        height: typeof size.height === 'number' ? `${size.height}px` : size.height,
+        width: `${size.width}px`,
+        height: `${size.height}px`,
         cursor: isDragging ? 'grabbing' : 'auto',
         transition: isDragging || isResizing ? 'none' : 'box-shadow 0.3s ease',
       }}
