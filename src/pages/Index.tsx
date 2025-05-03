@@ -1,35 +1,47 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import PostSimulator from '@/components/post/PostSimulator';
 import EmojiPicker from '@/components/emoji/EmojiPicker';
 import AiAssistant from '@/components/chat/AiAssistant';
 import { Card } from '@/components/ui/card';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import DraggableComponent from '@/components/layout/DraggableComponent';
 
 const Index = () => {
+  // Track positions for draggable components
+  const [emojiPosition, setEmojiPosition] = useState({ x: 0, y: 0 });
+  const [aiPosition, setAiPosition] = useState({ x: 0, y: 0 });
+  
   return (
-    <div className="min-h-screen pb-20">
-      <div className="container mx-auto px-4 py-4">
-        {/* Main white card containing post simulator and emoji picker */}
-        <div className="bg-white dark:bg-gray-950 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-0">
-            {/* Post simulator - left side */}
-            <div className="md:col-span-8 border-r border-gray-200 dark:border-gray-800">
-              <PostSimulator />
-            </div>
-            
-            {/* Emoji Picker - right side inside the white card */}
-            <div className="md:col-span-4">
-              <EmojiPicker />
-            </div>
+    <div className="min-h-screen pb-20 relative overflow-x-hidden">
+      <div className="container mx-auto p-4 flex justify-center">
+        {/* Centered Post Container with 1080x1920 aspect ratio */}
+        <div className="max-w-[540px] w-full mx-auto">
+          <div className="bg-white dark:bg-gray-950 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <PostSimulator />
           </div>
         </div>
         
-        {/* AI Assistant - outside the white card */}
-        <div className="mt-4">
-          <Card className="shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden">
+        {/* Draggable Components */}
+        <DraggableComponent 
+          initialPosition={emojiPosition} 
+          onPositionChange={setEmojiPosition}
+          className="z-10"
+        >
+          <Card className="w-[300px] shadow-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+            <EmojiPicker />
+          </Card>
+        </DraggableComponent>
+        
+        <DraggableComponent 
+          initialPosition={aiPosition} 
+          onPositionChange={setAiPosition}
+          className="z-10"
+        >
+          <Card className="w-[300px] shadow-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
             <AiAssistant />
           </Card>
-        </div>
+        </DraggableComponent>
       </div>
     </div>
   );
