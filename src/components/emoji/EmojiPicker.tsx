@@ -1,19 +1,33 @@
 
 import React, { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Clock, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 
 const emojis = [
-  '😀', '😂', '😊', '🥰', '😍', '🤩', '😎', '🥳',
-  '😭', '😤', '😡', '🥺', '😴', '🤔', '🙄', '😬',
-  '👍', '👎', '👏', '🙌', '🤝', '👊', '✌️', '🤞',
-  '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+  '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', 
+  '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩',
+  '😘', '😗', '☺️', '😚', '😙', '🥲', '😋', '😛',
+  '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔',
+];
+
+const categories = [
+  { icon: <Clock size={18} />, name: 'recent' },
+  { icon: '😀', name: 'smileys' },
+  { icon: '👋', name: 'people' },
+  { icon: '🐶', name: 'animals' },
+  { icon: '🍔', name: 'food' },
+  { icon: '⚽', name: 'activities' },
+  { icon: '🚗', name: 'travel' },
+  { icon: '💡', name: 'objects' },
+  { icon: '#️⃣', name: 'symbols' },
 ];
 
 const EmojiPicker = () => {
   const [copiedEmoji, setCopiedEmoji] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
   const handleCopyEmoji = (emoji: string) => {
@@ -30,29 +44,53 @@ const EmojiPicker = () => {
     }, 2000);
   };
 
+  const filteredEmojis = searchQuery 
+    ? emojis.filter(emoji => emoji.includes(searchQuery))
+    : emojis;
+
   return (
-    <Card className="bg-[#1E1E1E] border border-white/10 text-white p-4 h-full overflow-auto">
+    <div className="p-4 h-full">
       <h3 className="font-semibold mb-3 text-lg">Emojis</h3>
-      <div className="grid grid-cols-4 gap-2">
-        {emojis.map((emoji, index) => (
+      
+      <div className="relative mb-3">
+        <Input
+          placeholder="Buscar emoji..."
+          className="pl-9"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+      </div>
+      
+      <div className="flex justify-between mb-4 overflow-x-auto pb-2">
+        {categories.map((category, index) => (
           <Button
             key={index}
-            variant="outline"
-            className="h-12 text-2xl relative bg-[#252525] border-white/5 hover:bg-[#333333]"
-            onClick={() => handleCopyEmoji(emoji)}
+            variant="ghost"
+            size="sm"
+            className="min-w-min px-2"
           >
-            {emoji}
-            <span className="absolute top-0 right-0 bg-[#333333] rounded-full p-0.5 transform translate-x-1/3 -translate-y-1/3">
-              {copiedEmoji === emoji ? (
-                <Check className="h-3 w-3 text-green-500" />
-              ) : (
-                <Copy className="h-3 w-3 text-gray-400" />
-              )}
-            </span>
+            {typeof category.icon === 'string' 
+              ? <span className="text-lg">{category.icon}</span> 
+              : category.icon
+            }
           </Button>
         ))}
       </div>
-    </Card>
+      
+      <div className="grid grid-cols-8 gap-1">
+        {filteredEmojis.map((emoji, index) => (
+          <Button
+            key={index}
+            variant="ghost"
+            className="h-9 text-xl relative hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={() => handleCopyEmoji(emoji)}
+          >
+            {emoji}
+          </Button>
+        ))}
+      </div>
+    </div>
   );
 };
 

@@ -14,8 +14,8 @@ const NavigationBar = () => {
           to="/" 
           className={`flex flex-col items-center gap-1 px-4 py-1.5 rounded-lg transition-all ${
             isActive('/') 
-              ? 'text-blue-600 dark:text-white bg-blue-50 dark:bg-white/10' 
-              : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-white/5'
+              ? 'text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-white/10' 
+              : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-white/5'
           }`}
         >
           <LayoutGrid size={20} />
@@ -26,8 +26,8 @@ const NavigationBar = () => {
           to="/history" 
           className={`flex flex-col items-center gap-1 px-4 py-1.5 rounded-lg transition-all ${
             isActive('/history') 
-              ? 'text-blue-600 dark:text-white bg-blue-50 dark:bg-white/10' 
-              : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-white/5'
+              ? 'text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-white/10' 
+              : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-white/5'
           }`}
         >
           <History size={20} />

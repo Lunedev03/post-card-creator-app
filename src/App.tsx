@@ -35,7 +35,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="min-h-screen bg-gradient-to-br from-gray-100 to-white dark:from-gray-900 dark:to-black text-gray-800 dark:text-white flex flex-col transition-colors duration-300">
+            <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-blue-50 dark:from-gray-900 dark:to-black text-gray-800 dark:text-white flex flex-col transition-colors duration-300">
               <TopBar />
               <div className="flex-grow pt-14 pb-16"> {/* Padding for TopBar and NavigationBar */}
                 <Routes>
