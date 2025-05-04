@@ -11,18 +11,11 @@ interface OpenAIErrorResponse {
   };
 }
 
-// Obter a chave da API - primeiro tenta variável de ambiente, depois localStorage
+// Obter a chave da API - apenas da variável de ambiente
 const getApiKey = (): string | undefined => {
-  // Tenta obter da variável de ambiente
+  // Obter da variável de ambiente
   const envKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (envKey) return envKey;
-  
-  // Se não encontrar, tenta obter do localStorage
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('openai_api_key') || undefined;
-  }
-  
-  return undefined;
+  return envKey;
 };
 
 // Criar cliente OpenAI sob demanda, apenas quando houver uma chave
@@ -30,7 +23,7 @@ const createOpenAIClient = () => {
   const apiKey = getApiKey();
   
   if (!apiKey) {
-    throw new Error('Chave da API OpenAI não configurada. Configure a chave nas configurações ou no arquivo .env');
+    throw new Error('Chave da API OpenAI não configurada. Configure a variável VITE_OPENAI_API_KEY no arquivo .env');
   }
   
   return new OpenAI({
@@ -88,10 +81,17 @@ const convertToOpenAIMessages = (messages: Message[], promptMode: string = 'defa
   };
   
   // Converte as mensagens do chat para o formato da OpenAI
-  const convertedMessages = messages.map(msg => ({
-    role: msg.sender === 'user' ? 'user' : 'assistant',
-    content: msg.text
-  } as OpenAIMessage));
+  const convertedMessages = messages.map(msg => {
+    // Se a mensagem tiver uma imagem, informar no texto
+    const content = msg.imageUrl 
+      ? `${msg.text || ''}\n\n[Imagem anexada pelo usuário]` 
+      : msg.text;
+      
+    return {
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content
+    } as OpenAIMessage;
+  });
   
   return [systemMessage, ...convertedMessages];
 };
@@ -224,7 +224,7 @@ export const sendMessageToOpenAI = async (
       error.message?.includes('API key') || 
       error.message?.includes('Authentication')
     ) {
-      return 'Erro de autenticação com a API da OpenAI. Por favor, verifique sua chave API nas configurações.';
+      return 'Erro de autenticação com a API da OpenAI. Configure a variável VITE_OPENAI_API_KEY no arquivo .env.';
     }
     
     // Tentar usar um modelo alternativo em caso de erro persistente

@@ -209,12 +209,12 @@ const DraggableComponent = ({
       return;
     }
     
+    e.preventDefault(); // Prevenir comportamento padrão antes de definir o estado
     setIsDragging(true);
     initialMousePosition.current = { 
       x: e.clientX - position.x, 
       y: e.clientY - position.y 
     };
-    e.preventDefault();
   };
   
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -239,44 +239,39 @@ const DraggableComponent = ({
     }
     
     if (e.touches.length === 1) {
+      e.preventDefault(); // Prevenir comportamento padrão antes de definir o estado
       setIsDragging(true);
       const touch = e.touches[0];
       initialMousePosition.current = { 
         x: touch.clientX - position.x, 
         y: touch.clientY - position.y 
       };
-      e.preventDefault();
     }
   };
 
   const handleResizeStart = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault(); // Prevenir comportamento padrão
+    e.stopPropagation();
     setIsResizing(true);
     initialMousePosition.current = { x: e.clientX, y: e.clientY };
-    resizeStartSize.current = { 
-      width: size.width,
-      height: size.height
-    };
-    e.preventDefault();
-    e.stopPropagation(); // Impedir que o evento se propague
+    resizeStartSize.current = { width: size.width, height: size.height };
   };
 
   const handleResizeTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (e.touches.length === 1) {
+      e.preventDefault(); // Prevenir comportamento padrão
+      e.stopPropagation();
       setIsResizing(true);
       const touch = e.touches[0];
       initialMousePosition.current = { x: touch.clientX, y: touch.clientY };
-      resizeStartSize.current = { 
-        width: size.width,
-        height: size.height
-      };
-      e.preventDefault();
-      e.stopPropagation(); // Impedir que o evento se propague
+      resizeStartSize.current = { width: size.width, height: size.height };
     }
   };
   
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
+        e.preventDefault(); // Prevenir comportamento padrão durante o arrasto
         const newPosition = { 
           x: e.clientX - initialMousePosition.current.x,
           y: e.clientY - initialMousePosition.current.y
@@ -290,6 +285,7 @@ const DraggableComponent = ({
       }
       
       if (isResizing) {
+        e.preventDefault(); // Prevenir comportamento padrão durante o redimensionamento
         const deltaX = e.clientX - initialMousePosition.current.x;
         const deltaY = e.clientY - initialMousePosition.current.y;
         
@@ -314,6 +310,7 @@ const DraggableComponent = ({
     
     const handleTouchMove = (e: TouchEvent) => {
       if ((isDragging || isResizing) && e.touches.length === 1) {
+        e.preventDefault(); // Prevenir comportamento padrão durante o toque e movimento
         const touch = e.touches[0];
         
         if (isDragging) {
@@ -432,7 +429,9 @@ const DraggableComponent = ({
         className="draggable-header flex items-center justify-center h-8 bg-gray-100 dark:bg-gray-900 rounded-t-md border-b border-gray-200 dark:border-gray-800"
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
-        onDoubleClick={() => {
+        onClick={(e) => e.preventDefault()} // Prevenir clique que poderia causar rolagem
+        onDoubleClick={(e) => {
+          e.preventDefault(); // Prevenir comportamento padrão
           // Alternar entre esquerda e direita com duplo clique
           const isAtLeft = position.x < 0;
           if (isAtLeft) {

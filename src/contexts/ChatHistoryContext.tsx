@@ -4,6 +4,7 @@ export type Message = {
   text: string;
   sender: 'user' | 'ai';
   timestamp: Date;
+  imageUrl?: string; // URL da imagem, se houver
 };
 
 export type Chat = {
@@ -18,7 +19,7 @@ export type Chat = {
 interface ChatHistoryContextType {
   chats: Chat[];
   activeChat: Chat | null;
-  setActiveChat: (chat: Chat | null) => void;
+  setActiveChat: (chatId: string) => void;
   createNewChat: (modelId?: string) => Chat;
   updateChat: (id: string, updates: Partial<Omit<Chat, 'id'>>) => void;
   deleteChat: (id: string) => void;
@@ -43,7 +44,13 @@ interface ChatHistoryProviderProps {
 
 export const ChatHistoryProvider: React.FC<ChatHistoryProviderProps> = ({ children }) => {
   const [chats, setChats] = useState<Chat[]>([]);
-  const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const [activeChat, setActiveChatState] = useState<Chat | null>(null);
+
+  // Função para definir o chat ativo por ID
+  const setActiveChat = (chatId: string) => {
+    const chat = chats.find((c) => c.id === chatId);
+    setActiveChatState(chat || null);
+  };
 
   // Inicializar do localStorage quando o componente montar
   useEffect(() => {
@@ -66,7 +73,7 @@ export const ChatHistoryProvider: React.FC<ChatHistoryProviderProps> = ({ childr
         if (activeId) {
           const foundChat = parsedChats.find((c: Chat) => c.id === activeId);
           if (foundChat) {
-            setActiveChat(foundChat);
+            setActiveChatState(foundChat);
           }
         }
       } catch (error) {
@@ -105,7 +112,7 @@ export const ChatHistoryProvider: React.FC<ChatHistoryProviderProps> = ({ childr
     };
 
     setChats(prevChats => [newChat, ...prevChats]);
-    setActiveChat(newChat);
+    setActiveChatState(newChat);
     return newChat;
   };
 
@@ -120,7 +127,7 @@ export const ChatHistoryProvider: React.FC<ChatHistoryProviderProps> = ({ childr
 
     // Atualizar também o chat ativo se for o mesmo
     if (activeChat?.id === id) {
-      setActiveChat(prev => prev ? { ...prev, ...updates, updatedAt: new Date() } : null);
+      setActiveChatState(prev => prev ? { ...prev, ...updates, updatedAt: new Date() } : null);
     }
   };
 
@@ -129,7 +136,7 @@ export const ChatHistoryProvider: React.FC<ChatHistoryProviderProps> = ({ childr
     
     // Se o chat ativo for excluído, defina como null
     if (activeChat?.id === id) {
-      setActiveChat(null);
+      setActiveChatState(null);
     }
   };
 
@@ -152,7 +159,7 @@ export const ChatHistoryProvider: React.FC<ChatHistoryProviderProps> = ({ childr
 
     // Atualizar também o chat ativo se for o mesmo
     if (activeChat?.id === chatId) {
-      setActiveChat(prev => 
+      setActiveChatState(prev => 
         prev ? {
           ...prev,
           messages: [...prev.messages, message],
@@ -171,7 +178,7 @@ export const ChatHistoryProvider: React.FC<ChatHistoryProviderProps> = ({ childr
 
   const clearAllChats = () => {
     setChats([]);
-    setActiveChat(null);
+    setActiveChatState(null);
     localStorage.removeItem('chatHistory');
     localStorage.removeItem('activeChatId');
   };
