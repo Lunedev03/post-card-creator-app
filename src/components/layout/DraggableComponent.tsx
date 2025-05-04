@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronsUpDown } from 'lucide-react';
 
 interface DraggableComponentProps {
@@ -11,6 +11,7 @@ interface DraggableComponentProps {
   minWidth?: number;
   minHeight?: number;
   preventExitViewport?: boolean;
+  minVisiblePercentage?: number; // Porcentagem mínima do componente que deve permanecer visível
 }
 
 // Estilos CSS para o componente arrastável
@@ -74,6 +75,7 @@ const DraggableComponent = ({
   minWidth = 200,
   minHeight = 150,
   preventExitViewport = true,
+  minVisiblePercentage = 20, // Valor padrão: 20% do componente deve ficar visível
 }: DraggableComponentProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -134,17 +136,22 @@ const DraggableComponent = ({
            !!target.closest('textarea');
   };
   
-  // Função para restringir a posição dentro da viewport
-  const constrainPosition = (pos: { x: number, y: number }) => {
+  // Função para restringir a posição dentro da viewport - agora memoizada
+  const constrainPosition = useCallback((pos: { x: number, y: number }) => {
     if (!preventExitViewport) return pos;
     
     const headerHeight = 50; // Altura aproximada do cabeçalho
     
+    // Calcular a porcentagem mínima do componente que deve permanecer visível
+    const minVisibleWidth = size.width * (minVisiblePercentage / 100);
+    
     return {
-      x: Math.max(0, Math.min(pos.x, viewportSize.width - size.width)),
+      // Permitir mover mais para esquerda, mantendo pelo menos a porcentagem mínima visível
+      x: Math.max(-size.width + minVisibleWidth, Math.min(pos.x, viewportSize.width - minVisibleWidth)),
+      // Para o eixo Y, manter comportamento tradicional
       y: Math.max(0, Math.min(pos.y, viewportSize.height - headerHeight))
     };
-  };
+  }, [preventExitViewport, size.width, viewportSize, minVisiblePercentage]);
   
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     // Verificar se o clique foi no elemento de redimensionamento
@@ -255,7 +262,7 @@ const DraggableComponent = ({
         const newHeight = Math.max(minHeight, resizeStartSize.current.height + deltaY);
         
         // Limitar o tamanho máximo ao tamanho da viewport
-        const maxWidth = preventExitViewport ? viewportSize.width - position.x : 2000;
+        const maxWidth = preventExitViewport ? viewportSize.width - position.x + (size.width * (1 - minVisiblePercentage/100)) : 2000;
         const maxHeight = preventExitViewport ? viewportSize.height - position.y : 2000;
         
         const constrainedSize = {
@@ -295,7 +302,7 @@ const DraggableComponent = ({
           const newHeight = Math.max(minHeight, resizeStartSize.current.height + deltaY);
           
           // Limitar o tamanho máximo ao tamanho da viewport
-          const maxWidth = preventExitViewport ? viewportSize.width - position.x : 2000;
+          const maxWidth = preventExitViewport ? viewportSize.width - position.x + (size.width * (1 - minVisiblePercentage/100)) : 2000;
           const maxHeight = preventExitViewport ? viewportSize.height - position.y : 2000;
           
           const constrainedSize = {
@@ -329,7 +336,7 @@ const DraggableComponent = ({
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleMouseUp);
     };
-  }, [isDragging, isResizing, position, size, minWidth, minHeight, onPositionChange, onSizeChange, viewportSize, preventExitViewport]);
+  }, [isDragging, isResizing, position, size, minWidth, minHeight, onPositionChange, onSizeChange, viewportSize, preventExitViewport, constrainPosition, minVisiblePercentage]);
   
   // Adicionar feedback de resposta no mobile (vibração)
   useEffect(() => {
@@ -337,6 +344,25 @@ const DraggableComponent = ({
       navigator.vibrate(10); // Vibração curta para feedback tátil
     }
   }, [isDragging, isMobile]);
+  
+  // Adicionar botões para mover rapidamente para as bordas
+  const moveToLeft = useCallback(() => {
+    const newPos = constrainPosition({ 
+      x: -size.width + (size.width * minVisiblePercentage / 100), 
+      y: position.y 
+    });
+    setPosition(newPos);
+    onPositionChange(newPos);
+  }, [constrainPosition, size.width, position.y, minVisiblePercentage, onPositionChange]);
+  
+  const moveToRight = useCallback(() => {
+    const newPos = constrainPosition({ 
+      x: viewportSize.width - (size.width * minVisiblePercentage / 100), 
+      y: position.y 
+    });
+    setPosition(newPos);
+    onPositionChange(newPos);
+  }, [constrainPosition, viewportSize.width, size.width, position.y, minVisiblePercentage, onPositionChange]);
   
   return (
     <div
@@ -355,11 +381,31 @@ const DraggableComponent = ({
       
       {/* Cabeçalho para arrastar */}
       <div 
-        className="draggable-header flex items-center justify-center h-8 bg-gray-100 dark:bg-gray-900 rounded-t-md border-b border-gray-200 dark:border-gray-800"
+        className="draggable-header flex items-center justify-between h-8 bg-gray-100 dark:bg-gray-900 rounded-t-md border-b border-gray-200 dark:border-gray-800 px-2"
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
       >
+        <button 
+          className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
+          onClick={moveToLeft}
+          title="Mover para a esquerda"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </button>
+        
         <div className="w-16 h-1 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+        
+        <button 
+          className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
+          onClick={moveToRight}
+          title="Mover para a direita"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
       </div>
       
       {/* Conteúdo do componente */}
