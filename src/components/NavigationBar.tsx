@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutGrid, History } from 'lucide-react';
@@ -31,7 +30,7 @@ const NavigationBar = () => {
           }`}
         >
           <History size={20} />
-          <span className="text-xs font-medium">Histórico</span>
+          <span className="text-xs font-medium">Posts</span>
         </Link>
       </div>
     </nav>

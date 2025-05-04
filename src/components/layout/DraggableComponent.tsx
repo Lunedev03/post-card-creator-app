@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Move, ChevronsUpDown } from 'lucide-react';
+import { ChevronsUpDown } from 'lucide-react';
 
 interface DraggableComponentProps {
   children: React.ReactNode;
@@ -9,6 +8,40 @@ interface DraggableComponentProps {
   onPositionChange: (position: { x: number; y: number }) => void;
   onSizeChange?: (size: { width: number; height: number }) => void;
   className?: string;
+}
+
+// Estilos CSS para o componente arrastável
+const draggableStyles = `
+  .draggable-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    z-index: 1;
+    pointer-events: none;
+    transition: background 0.2s ease;
+  }
+  
+  .draggable-container:hover .draggable-overlay {
+    background: rgba(0, 0, 0, 0.02);
+  }
+  
+  .draggable-container.cursor-grabbing .draggable-overlay {
+    background: rgba(0, 0, 0, 0.05);
+  }
+`;
+
+// Adicione os estilos ao documento apenas uma vez
+if (typeof document !== 'undefined') {
+  const styleId = 'draggable-component-styles';
+  if (!document.getElementById(styleId)) {
+    const styleElement = document.createElement('style');
+    styleElement.id = styleId;
+    styleElement.innerHTML = draggableStyles;
+    document.head.appendChild(styleElement);
+  }
 }
 
 const DraggableComponent = ({
@@ -24,10 +57,39 @@ const DraggableComponent = ({
   const [position, setPosition] = useState(initialPosition);
   const [size, setSize] = useState(initialSize);
   const dragRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const initialMousePosition = useRef({ x: 0, y: 0 });
   const resizeStartSize = useRef({ width: 0, height: 0 });
   
+  // Função simplificada para detectar elementos interativos
+  const isInteractiveElement = (target: HTMLElement | null): boolean => {
+    if (!target) return false;
+    
+    const interactiveElements = [
+      'BUTTON', 'INPUT', 'A', 'SELECT', 'TEXTAREA'
+    ];
+    
+    return interactiveElements.includes(target.tagName) ||
+           target.hasAttribute('role') ||
+           target.classList.contains('emoji-button') ||
+           !!target.closest('button') ||
+           !!target.closest('a') ||
+           !!target.closest('input') ||
+           !!target.closest('select') ||
+           !!target.closest('textarea');
+  };
+  
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Verificar se o clique foi no elemento de redimensionamento
+    if ((e.target as HTMLElement).classList.contains('resize-handle')) {
+      return;
+    }
+    
+    // Ignorar cliques em elementos interativos
+    if (isInteractiveElement(e.target as HTMLElement)) {
+      return;
+    }
+    
     setIsDragging(true);
     initialMousePosition.current = { 
       x: e.clientX - position.x, 
@@ -37,6 +99,16 @@ const DraggableComponent = ({
   };
   
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    // Verificar se o toque foi no elemento de redimensionamento
+    if ((e.target as HTMLElement).classList.contains('resize-handle')) {
+      return;
+    }
+    
+    // Ignorar toques em elementos interativos
+    if (isInteractiveElement(e.target as HTMLElement)) {
+      return;
+    }
+    
     if (e.touches.length === 1) {
       setIsDragging(true);
       const touch = e.touches[0];
@@ -44,6 +116,7 @@ const DraggableComponent = ({
         x: touch.clientX - position.x, 
         y: touch.clientY - position.y 
       };
+      e.preventDefault();
     }
   };
 
@@ -55,6 +128,7 @@ const DraggableComponent = ({
       height: size.height
     };
     e.preventDefault();
+    e.stopPropagation(); // Impedir que o evento se propague
   };
 
   const handleResizeTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -66,6 +140,8 @@ const DraggableComponent = ({
         width: size.width,
         height: size.height
       };
+      e.preventDefault();
+      e.stopPropagation(); // Impedir que o evento se propague
     }
   };
   
@@ -139,7 +215,7 @@ const DraggableComponent = ({
     // Add event listeners
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleMouseUp);
     
     // Clean up
@@ -154,30 +230,34 @@ const DraggableComponent = ({
   return (
     <div
       ref={dragRef}
-      className={`absolute ${className}`}
+      className={`absolute rounded-md shadow-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 ${className} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} draggable-container`}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         width: `${size.width}px`,
         height: `${size.height}px`,
-        cursor: isDragging ? 'grabbing' : 'auto',
         transition: isDragging || isResizing ? 'none' : 'box-shadow 0.3s ease',
       }}
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
     >
+      {/* Overlay para feedback visual ao arrastar */}
+      <div className="draggable-overlay"></div>
+      
+      {/* Conteúdo do componente */}
       <div 
-        className="bg-blue-500 text-white p-1 rounded-t-md flex items-center justify-between cursor-grab"
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleTouchStart}
+        ref={contentRef}
+        className="w-full h-full overflow-auto relative"
       >
-        <div className="text-xs font-medium ml-2">Arraste aqui</div>
-        <Move size={16} className="mr-2" />
+        {children}
       </div>
-      <div className="overflow-auto h-[calc(100%-28px)]">{children}</div>
+      
+      {/* Manipulador de redimensionamento */}
       <div 
-        className="absolute bottom-0 right-0 w-6 h-6 flex items-center justify-center cursor-se-resize bg-blue-500 rounded-tl-md"
+        className="absolute right-0 bottom-0 w-6 h-6 flex items-center justify-center cursor-se-resize bg-gray-200/60 dark:bg-gray-800/60 hover:bg-gray-300/80 dark:hover:bg-gray-700/80 transition-colors rounded-tl-md z-50 resize-handle"
         onMouseDown={handleResizeStart}
         onTouchStart={handleResizeTouchStart}
       >
-        <ChevronsUpDown size={14} className="rotate-45 text-white" />
+        <ChevronsUpDown size={14} className="rotate-45 text-gray-600 dark:text-gray-300" />
       </div>
     </div>
   );
