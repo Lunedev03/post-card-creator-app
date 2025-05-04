@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { eventLogger } from '@/utils/eventLogger';
+import { eventLogger, EventLoggerEventDetails } from '@/utils/eventLogger';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Bug, RefreshCw } from 'lucide-react';
@@ -8,8 +8,14 @@ interface ButtonDebuggerProps {
   onClose?: () => void;
 }
 
+interface EventLoggerEvent {
+  timestamp: number;
+  type: string;
+  details?: EventLoggerEventDetails;
+}
+
 const ButtonDebugger: React.FC<ButtonDebuggerProps> = ({ onClose }) => {
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<EventLoggerEvent[]>([]);
   const [isMinimized, setIsMinimized] = useState(false);
   
   useEffect(() => {
@@ -96,12 +102,14 @@ const ButtonDebugger: React.FC<ButtonDebuggerProps> = ({ onClose }) => {
                     <span className="font-semibold">{event.type}:</span>
                     {event.type === 'ButtonClick' && (
                       <span className="ml-1">
-                        {event.details?.ariaLabel || event.details?.text || 'Botão sem texto'}
+                        {String(event.details?.ariaLabel || event.details?.text || 'Botão sem texto')}
                       </span>
                     )}
                     {event.type.includes('toggle') && (
                       <span className="ml-1">
-                        {event.details?.previous !== undefined ? `${event.details.previous} → ${event.details.new}` : 'Estado alterado'}
+                        {event.details?.previous !== undefined ? 
+                          `${String(event.details.previous)} → ${String(event.details.new)}` : 
+                          'Estado alterado'}
                       </span>
                     )}
                   </li>

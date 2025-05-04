@@ -128,7 +128,7 @@ const retryWithExponentialBackoff = async <T>(
   while (true) {
     try {
       return await fn();
-    } catch (error: any) {
+    } catch (error: unknown) {
       retries++;
       
       // Verificar se atingiu o número máximo de tentativas
@@ -136,12 +136,18 @@ const retryWithExponentialBackoff = async <T>(
         throw error;
       }
       
+      const err = error as { 
+        status?: number; 
+        error?: { type?: string }; 
+        message?: string 
+      };
+      
       // Verificar se é um erro de limite de taxa
       const isRateLimitError = 
-        error.status === 429 || 
-        (error.error?.type === 'insufficient_quota') ||
-        (error.message && error.message.includes('rate limit')) ||
-        (error.message && error.message.includes('quota'));
+        err.status === 429 || 
+        (err.error?.type === 'insufficient_quota') ||
+        (err.message && err.message.includes('rate limit')) ||
+        (err.message && err.message.includes('quota'));
       
       // Se não for um erro de taxa, não tente novamente
       if (!isRateLimitError) {
@@ -215,14 +221,16 @@ export const sendMessageToOpenAI = async (
       
       return response.choices[0]?.message?.content || 'Desculpe, não consegui gerar uma resposta.';
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erro ao chamar a API da OpenAI:', error);
+    
+    const err = error as { message?: string };
     
     // Verificar se o erro é relacionado à chave da API
     if (
-      error.message?.includes('api_key') || 
-      error.message?.includes('API key') || 
-      error.message?.includes('Authentication')
+      err.message?.includes('api_key') || 
+      err.message?.includes('API key') || 
+      err.message?.includes('Authentication')
     ) {
       return 'Erro de autenticação com a API da OpenAI. Configure a variável VITE_OPENAI_API_KEY no arquivo .env.';
     }
@@ -261,5 +269,18 @@ export const createMessagesPayload = (
   messageHistory: Message[],
   systemMessage?: string
 ): Array<OpenAI.Chat.ChatCompletionMessageParam> => {
-  // ... existing code ...
+  // Criar a mensagem do sistema, se fornecida
+  const systemMessageObj: OpenAI.Chat.ChatCompletionMessageParam = {
+    role: 'system',
+    content: systemMessage || 'Você é um assistente útil e amigável.'
+  };
+
+  // Converter mensagens do histórico para o formato OpenAI
+  const messages: OpenAI.Chat.ChatCompletionMessageParam[] = messageHistory.map(msg => ({
+    role: msg.sender === 'user' ? 'user' : 'assistant',
+    content: msg.text
+  }));
+
+  // Adicionar mensagem do sistema no início
+  return [systemMessageObj, ...messages];
 }; 
