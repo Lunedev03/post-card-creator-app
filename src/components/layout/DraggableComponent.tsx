@@ -46,6 +46,41 @@ const draggableStyles = `
     cursor: grabbing;
   }
   
+  .draggable-container {
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease;
+  }
+  
+  .draggable-container.dragging {
+    transition: none;
+  }
+  
+  .draggable-handle {
+    width: 40px;
+    height: 5px;
+    border-radius: 3px;
+    background-color: #ddd;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .draggable-handle::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: shimmer 2s infinite;
+    transform: translateX(-100%);
+  }
+  
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
   @media (max-width: 768px) {
     .draggable-container {
       border-radius: 12px !important;
@@ -347,32 +382,45 @@ const DraggableComponent = ({
   
   // Adicionar botões para mover rapidamente para as bordas
   const moveToLeft = useCallback(() => {
-    const newPos = constrainPosition({ 
-      x: -size.width + (size.width * minVisiblePercentage / 100), 
+    // Move para a esquerda deixando apenas o mínimo visível
+    const minVisible = size.width * (minVisiblePercentage / 100);
+    const newPos = { 
+      x: -size.width + minVisible, 
       y: position.y 
-    });
-    setPosition(newPos);
+    };
+    
+    // Usar uma animação suave com setTimeout
+    setPosition(prev => ({
+      ...prev,
+      x: newPos.x
+    }));
     onPositionChange(newPos);
-  }, [constrainPosition, size.width, position.y, minVisiblePercentage, onPositionChange]);
+  }, [size.width, position.y, minVisiblePercentage, onPositionChange]);
   
   const moveToRight = useCallback(() => {
-    const newPos = constrainPosition({ 
-      x: viewportSize.width - (size.width * minVisiblePercentage / 100), 
+    // Move para a direita mantendo o componente totalmente visível
+    const newPos = { 
+      x: Math.max(0, viewportSize.width - size.width), 
       y: position.y 
-    });
-    setPosition(newPos);
+    };
+    
+    // Usar uma animação suave para o movimento
+    setPosition(prev => ({
+      ...prev,
+      x: newPos.x
+    }));
     onPositionChange(newPos);
-  }, [constrainPosition, viewportSize.width, size.width, position.y, minVisiblePercentage, onPositionChange]);
+  }, [viewportSize.width, size.width, position.y, onPositionChange]);
   
   return (
     <div
       ref={dragRef}
-      className={`absolute rounded-md shadow-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 ${className} ${isDragging ? 'cursor-grabbing' : ''} draggable-container`}
+      className={`absolute rounded-md shadow-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 ${className} ${isDragging ? 'cursor-grabbing dragging' : ''} draggable-container`}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         width: `${size.width}px`,
         height: `${size.height}px`,
-        transition: isDragging || isResizing ? 'none' : 'box-shadow 0.3s ease',
+        transition: isDragging || isResizing ? 'none' : 'transform 0.2s ease-out, box-shadow 0.3s ease',
         zIndex: isDragging || isResizing ? 100 : 10,
       }}
     >
@@ -381,31 +429,21 @@ const DraggableComponent = ({
       
       {/* Cabeçalho para arrastar */}
       <div 
-        className="draggable-header flex items-center justify-between h-8 bg-gray-100 dark:bg-gray-900 rounded-t-md border-b border-gray-200 dark:border-gray-800 px-2"
+        className="draggable-header flex items-center justify-center h-8 bg-gray-100 dark:bg-gray-900 rounded-t-md border-b border-gray-200 dark:border-gray-800"
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
+        onDoubleClick={() => {
+          // Alternar entre esquerda e direita com duplo clique
+          const isAtLeft = position.x < 0;
+          if (isAtLeft) {
+            moveToRight();
+          } else {
+            moveToLeft();
+          }
+        }}
+        title="Dica: Clique duas vezes para alternar posição"
       >
-        <button 
-          className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
-          onClick={moveToLeft}
-          title="Mover para a esquerda"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m15 18-6-6 6-6" />
-          </svg>
-        </button>
-        
-        <div className="w-16 h-1 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
-        
-        <button 
-          className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
-          onClick={moveToRight}
-          title="Mover para a direita"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        </button>
+        <div className="draggable-handle"></div>
       </div>
       
       {/* Conteúdo do componente */}
