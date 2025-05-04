@@ -1,6 +1,16 @@
 import OpenAI from 'openai';
 import { Message } from '@/contexts/ChatHistoryContext';
 
+// Interface para erros específicos da API
+interface OpenAIErrorResponse {
+  error?: {
+    message: string;
+    type: string;
+    param: string | null;
+    code: string;
+  };
+}
+
 // Obter a chave da API - primeiro tenta variável de ambiente, depois localStorage
 const getApiKey = (): string | undefined => {
   // Tenta obter da variável de ambiente
@@ -106,54 +116,139 @@ const detectPromptMode = (messages: Message[]): string => {
   return 'default';
 };
 
+// Implementação do backoff exponencial para novas tentativas
+const retryWithExponentialBackoff = async <T>(
+  fn: () => Promise<T>,
+  initialDelay = 1000,
+  maxRetries = 3
+): Promise<T> => {
+  let retries = 0;
+  let delay = initialDelay;
+  
+  while (true) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      retries++;
+      
+      // Verificar se atingiu o número máximo de tentativas
+      if (retries > maxRetries) {
+        throw error;
+      }
+      
+      // Verificar se é um erro de limite de taxa
+      const isRateLimitError = 
+        error.status === 429 || 
+        (error.error?.type === 'insufficient_quota') ||
+        (error.message && error.message.includes('rate limit')) ||
+        (error.message && error.message.includes('quota'));
+      
+      // Se não for um erro de taxa, não tente novamente
+      if (!isRateLimitError) {
+        throw error;
+      }
+      
+      console.warn(`Erro de limite de taxa na tentativa ${retries}. Tentando novamente em ${delay}ms`);
+      
+      // Esperar pelo tempo de delay antes de tentar novamente
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      // Aumentar o tempo de espera para a próxima tentativa (backoff exponencial)
+      delay *= 2;
+    }
+  }
+};
+
+// Fallback para modelos alternativos em caso de erro
+const getFallbackModel = (originalModel: string): string => {
+  const fallbackMap: Record<string, string> = {
+    'gpt-4o': 'gpt-4o-mini',
+    'gpt-4o-mini': 'gpt-3.5-turbo',
+    'gpt-4-turbo': 'gpt-3.5-turbo',
+    'gpt-3.5-turbo-16k': 'gpt-3.5-turbo',
+  };
+  
+  return fallbackMap[originalModel] || 'gpt-3.5-turbo';
+};
+
 // Enviar mensagens para a API da OpenAI e obter resposta
 export const sendMessageToOpenAI = async (
   messages: Message[], 
   modelId: string = 'gpt-3.5-turbo',
   promptMode?: string
 ): Promise<string> => {
+  // Verificações de segurança para garantir que o modelo exista
+  const validModels = [
+    'gpt-3.5-turbo', 
+    'gpt-3.5-turbo-16k',
+    'gpt-4o', 
+    'gpt-4o-mini',
+    'gpt-4-turbo'
+  ];
+  
+  // Se o modelo não estiver na lista de válidos, use o padrão
+  let apiModelId = modelId;
+  if (!validModels.includes(apiModelId)) {
+    console.warn(`Modelo ${modelId} não reconhecido, usando gpt-3.5-turbo como fallback`);
+    apiModelId = 'gpt-3.5-turbo';
+  }
+  
+  // Detectar modo do prompt automaticamente se não especificado
+  const detectedMode = promptMode || detectPromptMode(messages);
+  const openAIMessages = convertToOpenAIMessages(messages, detectedMode);
+  
   try {
-    // Criar cliente OpenAI apenas quando necessário
-    const openai = createOpenAIClient();
+    // Tentar fazer a requisição com backoff exponencial
+    return await retryWithExponentialBackoff(async () => {
+      // Criar cliente OpenAI apenas quando necessário
+      const openai = createOpenAIClient();
+      
+      const response = await openai.chat.completions.create({
+        model: apiModelId,
+        messages: openAIMessages,
+        temperature: 0.7,
+        max_tokens: 1000, // Aumentar para acomodar respostas mais longas
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      });
+      
+      return response.choices[0]?.message?.content || 'Desculpe, não consegui gerar uma resposta.';
+    });
+  } catch (error: any) {
+    console.error('Erro ao chamar a API da OpenAI:', error);
     
-    // Detectar modo do prompt automaticamente se não especificado
-    const detectedMode = promptMode || detectPromptMode(messages);
-    
-    const openAIMessages = convertToOpenAIMessages(messages, detectedMode);
-    
-    // Os IDs já estão alinhados com os nomes da API da OpenAI
-    // Não é necessário fazer mapeamento, exceto para alguns casos específicos
-    let apiModelId = modelId;
-    
-    // Verificações de segurança para garantir que o modelo exista
-    const validModels = [
-      'gpt-3.5-turbo', 
-      'gpt-3.5-turbo-16k',
-      'gpt-4o', 
-      'gpt-4o-mini',
-      'gpt-4-turbo'
-    ];
-    
-    // Se o modelo não estiver na lista de válidos, use o padrão
-    if (!validModels.includes(apiModelId)) {
-      console.warn(`Modelo ${modelId} não reconhecido, usando gpt-3.5-turbo como fallback`);
-      apiModelId = 'gpt-3.5-turbo';
+    // Verificar se o erro é relacionado à chave da API
+    if (
+      error.message?.includes('api_key') || 
+      error.message?.includes('API key') || 
+      error.message?.includes('Authentication')
+    ) {
+      return 'Erro de autenticação com a API da OpenAI. Por favor, verifique sua chave API nas configurações.';
     }
     
-    const response = await openai.chat.completions.create({
-      model: apiModelId,
-      messages: openAIMessages,
-      temperature: 0.7,
-      max_tokens: 1000, // Aumentar para acomodar respostas mais longas
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-    });
-    
-    return response.choices[0]?.message?.content || 'Desculpe, não consegui gerar uma resposta.';
-  } catch (error) {
-    console.error('Erro ao chamar a API da OpenAI:', error);
-    return 'Ocorreu um erro ao processar sua mensagem. Por favor, tente novamente mais tarde.';
+    // Tentar usar um modelo alternativo em caso de erro persistente
+    try {
+      console.warn(`Tentando com modelo alternativo: ${getFallbackModel(apiModelId)}`);
+      
+      // Criar cliente OpenAI apenas quando necessário
+      const openai = createOpenAIClient();
+      
+      const response = await openai.chat.completions.create({
+        model: getFallbackModel(apiModelId),
+        messages: openAIMessages,
+        temperature: 0.7,
+        max_tokens: 1000,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      });
+      
+      return response.choices[0]?.message?.content || 'Desculpe, não consegui gerar uma resposta.';
+    } catch (fallbackError) {
+      console.error('Erro ao usar modelo alternativo:', fallbackError);
+      return 'Ocorreu um erro ao processar sua mensagem. Por favor, tente novamente mais tarde.';
+    }
   }
 };
 

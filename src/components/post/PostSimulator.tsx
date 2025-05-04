@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, FileImage, Save } from 'lucide-react';
 import { exportAsImage } from '@/utils/imageExport';
@@ -7,6 +7,36 @@ import { useToast } from '@/hooks/use-toast';
 import PostTextInput from './PostTextInput';
 import ImageGrid from './ImageGrid';
 import ImageUploader from './ImageUploader';
+
+// Componente de botão memoizado para evitar re-renders
+const ActionButton = memo(({ 
+  onClick, 
+  icon, 
+  label, 
+  mobileLabel, 
+  isMobile, 
+  variant = "default", 
+  className = "" 
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  mobileLabel: string;
+  isMobile: boolean;
+  variant?: "default" | "outline";
+  className?: string;
+}) => (
+  <Button 
+    onClick={onClick} 
+    variant={variant}
+    className={className}
+  >
+    {icon}
+    {isMobile ? mobileLabel : label}
+  </Button>
+));
+
+ActionButton.displayName = 'ActionButton';
 
 const PostSimulator = () => {
   const [postText, setPostText] = useState('O que você está pensando?');
@@ -18,73 +48,74 @@ const PostSimulator = () => {
   const { addPost } = usePostHistory();
   const { toast } = useToast();
 
-  const handleTextChange = (text: string) => {
-    setPostText(text);
-  };
+  // Detectar se é dispositivo móvel - memoizado para evitar recálculos
+  const checkIfMobile = useCallback(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
 
-  // Detectar se é dispositivo móvel
   useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
     checkIfMobile();
     window.addEventListener('resize', checkIfMobile);
     return () => window.removeEventListener('resize', checkIfMobile);
-  }, []);
+  }, [checkIfMobile]);
 
-  // Ajusta a altura do container com base no conteúdo
+  // Atualizar a altura do container baseado no conteúdo - memoizado
+  const updateContainerHeight = useCallback(() => {
+    if (images.length > 0) {
+      setContainerHeight('auto');
+    } else {
+      const textHeight = textInputRef.current?.offsetHeight || 0;
+      const minHeight = isMobile 
+        ? Math.max(150, textHeight + 80) 
+        : Math.max(180, textHeight + 100);
+      setContainerHeight(`${minHeight}px`);
+    }
+  }, [images.length, isMobile]);
+
+  // Effect para atualizar a altura do container
   useEffect(() => {
-    const updateContainerHeight = () => {
-      // Se tem imagens, verifica o tamanho delas para definir a altura
-      if (images.length > 0) {
-        setContainerHeight('auto');
-      } else {
-        // Se não tem imagens, define uma altura menor
-        const textHeight = textInputRef.current?.offsetHeight || 0;
-        // Altura ajustada para dispositivos móveis vs desktop
-        const minHeight = isMobile 
-          ? Math.max(150, textHeight + 80) 
-          : Math.max(180, textHeight + 100);
-        setContainerHeight(`${minHeight}px`);
-      }
-    };
-
     updateContainerHeight();
-    
-    // Adiciona listener para redimensionar quando a janela muda de tamanho
     window.addEventListener('resize', updateContainerHeight);
     return () => window.removeEventListener('resize', updateContainerHeight);
-  }, [images, postText, isMobile]);
+  }, [updateContainerHeight]);
 
-  const addImages = (newImages: string[]) => {
-    // Limit to 4 images max
+  // Callback para mudança de texto - memoizado
+  const handleTextChange = useCallback((text: string) => {
+    setPostText(text);
+  }, []);
+
+  // Callback para adicionar imagens - memoizado
+  const addImages = useCallback((newImages: string[]) => {
     setImages(prev => {
       const combined = [...prev, ...newImages];
-      return combined.slice(0, 4);
+      return combined.slice(0, 4); // Limitar a 4 imagens
     });
-  };
+  }, []);
 
-  const removeImage = (indexToRemove: number) => {
+  // Callback para remover imagem - memoizado
+  const removeImage = useCallback((indexToRemove: number) => {
     setImages(prevImages => prevImages.filter((_, index) => index !== indexToRemove));
-  };
+  }, []);
   
-  const handleReorderImages = (newOrder: string[]) => {
+  // Callback para reordenar imagens - memoizado
+  const handleReorderImages = useCallback((newOrder: string[]) => {
     setImages(newOrder);
     toast({
       title: "Imagens reordenadas!",
       description: "A ordem das imagens foi atualizada.",
       duration: 1500,
     });
-  };
+  }, [toast]);
 
-  const handleExport = () => {
+  // Callback para exportar imagem - memoizado
+  const handleExport = useCallback(() => {
     if (postRef.current) {
       exportAsImage(postRef.current, 'meu-post.png');
     }
-  };
+  }, []);
 
-  const handleSaveToHistory = () => {
+  // Callback para salvar no histórico - memoizado
+  const handleSaveToHistory = useCallback(() => {
     if (postText !== 'O que você está pensando?') {
       addPost({
         text: postText,
@@ -102,9 +133,10 @@ const PostSimulator = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [postText, images, addPost, toast]);
 
-  const handleImageUpload = () => {
+  // Callback para fazer upload de imagem - memoizado
+  const handleImageUpload = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -113,12 +145,20 @@ const PostSimulator = () => {
       const target = e.target as HTMLInputElement;
       if (target.files && target.files.length > 0) {
         const files = Array.from(target.files);
+        const newImages: string[] = [];
+        let loadedCount = 0;
         
         files.forEach(file => {
           const reader = new FileReader();
           reader.onload = (loadEvent) => {
             if (loadEvent.target?.result) {
-              addImages([loadEvent.target.result as string]);
+              newImages.push(loadEvent.target.result as string);
+            }
+            
+            loadedCount++;
+            if (loadedCount === files.length) {
+              // Adiciona todas as imagens de uma vez para evitar múltiplos re-renders
+              addImages(newImages);
             }
           };
           reader.readAsDataURL(file);
@@ -126,6 +166,13 @@ const PostSimulator = () => {
       }
     };
     input.click();
+  }, [addImages]);
+
+  // Cálculo das classes de botão - memoizado
+  const buttonClasses = {
+    primary: `bg-blue-500 hover:bg-blue-600 text-xs sm:text-sm ${isMobile ? 'w-full' : 'flex-1'}`,
+    outline: `border-blue-500 text-blue-500 text-xs sm:text-sm ${isMobile ? 'w-full' : 'flex-1'}`,
+    full: "w-full border-blue-500 text-blue-500 text-xs sm:text-sm"
   };
 
   return (
@@ -170,37 +217,40 @@ const PostSimulator = () => {
 
         {/* Botões de ação responsivos */}
         <div className={`flex w-full ${isMobile ? 'flex-col gap-2' : 'gap-2'} mb-3 sm:mb-4`}>
-          <Button 
-            onClick={handleExport} 
-            className={`bg-blue-500 hover:bg-blue-600 text-xs sm:text-sm ${isMobile ? 'w-full' : 'flex-1'}`}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            {isMobile ? 'Exportar' : 'Exportar como imagem'}
-          </Button>
+          <ActionButton 
+            onClick={handleExport}
+            icon={<Download className="h-4 w-4 mr-2" />}
+            label="Exportar como imagem"
+            mobileLabel="Exportar"
+            isMobile={isMobile}
+            className={buttonClasses.primary}
+          />
           
-          <Button 
+          <ActionButton 
             onClick={handleSaveToHistory}
-            variant="outline" 
-            className={`border-blue-500 text-blue-500 text-xs sm:text-sm ${isMobile ? 'w-full' : 'flex-1'}`}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {isMobile ? 'Salvar' : 'Salvar no histórico'}
-          </Button>
+            icon={<Save className="h-4 w-4 mr-2" />}
+            label="Salvar no histórico"
+            mobileLabel="Salvar"
+            isMobile={isMobile}
+            variant="outline"
+            className={buttonClasses.outline}
+          />
         </div>
         
         {images.length > 0 && (
-          <Button 
+          <ActionButton 
             onClick={handleImageUpload}
-            variant="outline" 
-            className="w-full border-blue-500 text-blue-500 text-xs sm:text-sm"
-          >
-            <FileImage className="h-4 w-4 mr-2" />
-            Adicionar mais imagens {images.length}/4
-          </Button>
+            icon={<FileImage className="h-4 w-4 mr-2" />}
+            label={`Adicionar mais imagens ${images.length}/4`}
+            mobileLabel={`Adicionar mais imagens ${images.length}/4`}
+            isMobile={isMobile}
+            variant="outline"
+            className={buttonClasses.full}
+          />
         )}
       </div>
     </div>
   );
 };
 
-export default PostSimulator;
+export default memo(PostSimulator);
