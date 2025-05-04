@@ -180,9 +180,10 @@ const DraggableComponent = ({
     // Calcular a porcentagem mínima do componente que deve permanecer visível
     const minVisibleWidth = size.width * (minVisiblePercentage / 100);
     
+    // Modificado para permitir mover mais livremente para a esquerda
     return {
-      // Permitir mover mais para esquerda, mantendo pelo menos a porcentagem mínima visível
-      x: Math.max(-size.width + minVisibleWidth, Math.min(pos.x, viewportSize.width - minVisibleWidth)),
+      // Permitir mover mais para esquerda, mantendo pelo menos uma parte mínima visível
+      x: Math.min(Math.max(-size.width + minVisibleWidth, pos.x), viewportSize.width - minVisibleWidth),
       // Para o eixo Y, manter comportamento tradicional
       y: Math.max(0, Math.min(pos.y, viewportSize.height - headerHeight))
     };

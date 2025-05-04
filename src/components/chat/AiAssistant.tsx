@@ -35,7 +35,7 @@ type LLMModel = {
   id: string;
   name: string;
   description?: string;
-  icon?: any;
+  icon?: React.ComponentType<{ size?: number | string }>;
 };
 
 const llmModels: LLMModel[] = [
@@ -429,28 +429,31 @@ const AiAssistant = () => {
   const formatTextWithMarkdown = (text: string) => {
     // Envolvemos em um div para permitir estilos CSS
     return (
-      <div className="whitespace-pre-line prose prose-sm dark:prose-invert max-w-none">
+      <div className="whitespace-pre-line prose-sm dark:prose-invert max-w-none">
         {text.split('\n').map((line, i) => {
           // Verificar se é um título (começa com #)
           if (line.startsWith('# ')) {
-            return <h1 key={i} className="text-lg font-bold my-1">{line.substring(2)}</h1>;
+            return <h1 key={i} className="text-base font-bold my-1.5">{line.substring(2)}</h1>;
           } else if (line.startsWith('## ')) {
-            return <h2 key={i} className="text-base font-bold my-1">{line.substring(3)}</h2>;
+            return <h2 key={i} className="text-sm font-bold my-1">{line.substring(3)}</h2>;
           } else if (line.startsWith('### ')) {
-            return <h3 key={i} className="text-sm font-bold my-1">{line.substring(4)}</h3>;
+            return <h3 key={i} className="text-xs font-bold my-0.5">{line.substring(4)}</h3>;
           }
           
           // Verificar se é item de lista (começa com - ou *)
           if (line.startsWith('- ') || line.startsWith('* ')) {
-            return <li key={i} className="ml-4">{formatInlineMarkdown(line.substring(2))}</li>;
+            return <div key={i} className="flex items-start my-0.5">
+              <span className="mr-1.5 text-purple-500 dark:text-purple-400">•</span>
+              <span className="flex-1">{formatInlineMarkdown(line.substring(2))}</span>
+            </div>;
           }
           
           // Linha normal
           if (line.trim() === '') {
-            return <br key={i} />;
+            return <div key={i} className="h-2"></div>;
           }
           
-          return <p key={i} className="mb-1">{formatInlineMarkdown(line)}</p>;
+          return <p key={i} className="my-1">{formatInlineMarkdown(line)}</p>;
         })}
       </div>
     );
@@ -463,7 +466,7 @@ const AiAssistant = () => {
     return parts.map((part, j) => {
       // Se for índice ímpar, então está entre crases (código)
       if (j % 2 === 1) {
-        return <code key={j} className="bg-gray-200 dark:bg-gray-700 rounded text-xs px-1 py-0.5">{part}</code>;
+        return <code key={j} className="bg-gray-200 dark:bg-gray-700 rounded px-1.5 py-0.5 text-xs font-mono">{part}</code>;
       }
       
       // Formatar negrito (entre **)
@@ -474,7 +477,7 @@ const AiAssistant = () => {
             {boldParts.map((boldPart, k) => {
               // Se for índice ímpar, então está entre ** (negrito)
               if (k % 2 === 1) {
-                return <strong key={k} className="font-bold">{boldPart}</strong>;
+                return <strong key={k} className="font-semibold">{boldPart}</strong>;
               }
               return <span key={k}>{boldPart}</span>;
             })}
@@ -496,16 +499,16 @@ const AiAssistant = () => {
               onClick={(e) => handleNewChat(e)}
               className="w-full bg-purple-500 hover:bg-purple-600 text-white"
             >
-              <Plus size={16} className="mr-2" /> Nova Conversa
+              <Plus size={16} className="mr-1.5" /> Nova Conversa
             </Button>
             
             <div className="relative">
-              <Search size={16} className="absolute left-2.5 top-2.5 text-gray-500 dark:text-gray-400" />
+              <Search size={14} className="absolute left-2.5 top-2.5 text-gray-500 dark:text-gray-400" />
               <Input
                 placeholder="Buscar conversas"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 bg-gray-50 dark:bg-gray-900 h-9"
+                className="pl-8 bg-gray-50 dark:bg-gray-900 h-9 text-sm"
               />
             </div>
           </div>
@@ -513,12 +516,12 @@ const AiAssistant = () => {
           <ScrollArea className="flex-grow">
             {filteredChats.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-4 h-full text-gray-500 dark:text-gray-400">
-                <p className="mb-2 text-center">Nenhuma conversa encontrada</p>
+                <p className="mb-2 text-center text-sm">Nenhuma conversa encontrada</p>
                 {!searchQuery && (
                   <Button 
                     variant="ghost"
                     onClick={(e) => handleNewChat(e)}
-                    className="text-purple-500 hover:text-purple-600"
+                    className="text-purple-500 hover:text-purple-600 text-sm"
                   >
                     Iniciar uma nova conversa
                   </Button>
@@ -526,15 +529,15 @@ const AiAssistant = () => {
               </div>
             ) : (
               Object.entries(groupedChats).map(([dateKey, dateChats]) => (
-                <div key={dateKey} className="mb-4">
+                <div key={dateKey} className="mb-2">
                   <div className="px-3 py-1 text-xs text-gray-500 dark:text-gray-400 font-medium">
                     {dateKey}
                   </div>
                   {dateChats.map((chat) => (
                     <div 
                       key={chat.id}
-                      className={`p-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 ${
-                        activeChat?.id === chat.id ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                      className={`px-3 py-2 border-b border-gray-100 dark:border-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 ${
+                        activeChat?.id === chat.id ? 'bg-purple-50 dark:bg-purple-900/20 border-l-2 border-l-purple-500 dark:border-l-purple-400' : ''
                       }`}
                       onClick={(e) => handleChatSelect(chat, e)}
                     >
@@ -543,7 +546,7 @@ const AiAssistant = () => {
                       </h3>
                       <div className="flex items-center justify-between mt-1 text-xs text-gray-500 dark:text-gray-400">
                         <p>{formatDate(chat.updatedAt)}</p>
-                        <p>{chat.messages.length - 1} mensagens</p>
+                        <p>{chat.messages.length - 1} msg</p>
                       </div>
                     </div>
                   ))}
@@ -566,7 +569,7 @@ const AiAssistant = () => {
             >
               {isSidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
             </Button>
-            <MessageCircle size={16} className="text-blue-500 mr-2" />
+            <MessageCircle size={16} className="text-purple-500 mr-2" />
             <h3 className="font-medium text-gray-800 dark:text-white truncate text-sm sm:text-base">
               {isMobile 
                 ? activeChat.title.length > 20 
@@ -595,7 +598,7 @@ const AiAssistant = () => {
                       <mode.icon size={16} />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent side="bottom">
                     <p className="font-medium">{mode.name}</p>
                     <p className="text-xs text-gray-500">{mode.description}</p>
                   </TooltipContent>
@@ -603,34 +606,41 @@ const AiAssistant = () => {
               ))}
             </TooltipProvider>
             
-            <div className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors" onClick={(e) => {
-              e.preventDefault(); // Prevenir comportamento padrão de rolagem
-              setIsSettingsOpen(true);
-            }}>
-              <Settings size={20} className="text-gray-500 dark:text-gray-400" />
-            </div>
+            <Button 
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsSettingsOpen(true);
+              }}
+            >
+              <Settings size={16} className="text-gray-500 dark:text-gray-400" />
+            </Button>
             
             {/* Botão para Alternar Tema em Desktop */}
-            <div 
-              className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors" 
+            <Button 
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
               onClick={handleManualToggleTheme}
             >
               {isDarkMode ? (
-                <Sun size={20} className="text-gray-500 dark:text-gray-400" />
+                <Sun size={16} className="text-gray-500 dark:text-gray-400" />
               ) : (
-                <Moon size={20} className="text-gray-500 dark:text-gray-400" />
+                <Moon size={16} className="text-gray-500 dark:text-gray-400" />
               )}
-            </div>
+            </Button>
           </div>
         </div>
         
         {activePromptMode !== 'default' && (
-          <Alert variant="default" className="m-2 sm:m-3 mb-0 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+          <Alert variant="default" className="mx-2 mt-2 sm:mx-3 sm:mt-3 mb-0 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
             {activePromptMode === 'micro-reportagem' ? 
               <Newspaper className="h-4 w-4 text-blue-600 dark:text-blue-500" /> : 
               <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-500" />
             }
-            <AlertDescription>
+            <AlertDescription className="text-sm">
               Modo <span className="font-medium">
                 {activePromptMode === 'micro-reportagem' ? 'Micro-Reportagem' : activePromptMode}
               </span> ativado
@@ -638,29 +648,29 @@ const AiAssistant = () => {
           </Alert>
         )}
         
-        <ScrollArea className="flex-grow p-2 sm:p-4 scrollable-content">
-          <div className="flex flex-col space-y-4">
+        <ScrollArea className="flex-grow p-2 sm:p-3 scrollable-content">
+          <div className="flex flex-col space-y-3 pb-1">
             {activeChat.messages.map((msg, index) => (
               <div
                 key={index}
-                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in duration-200`}
+                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in duration-100`}
               >
                 {msg.sender === 'ai' && (
-                  <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-2 flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-2 flex-shrink-0 mt-1">
                     <Sparkles size={14} className="text-purple-500" />
                   </div>
                 )}
                 <div
-                  className={`${messageMaxWidth} rounded-2xl ${
+                  className={`${messageMaxWidth} ${
                     msg.sender === 'user'
-                      ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-br-sm shadow-sm shadow-purple-200 dark:shadow-purple-900/20'
-                      : 'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-bl-sm shadow-sm text-gray-800 dark:text-white'
+                      ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-2xl rounded-br-md shadow-sm shadow-purple-200 dark:shadow-purple-900/20'
+                      : 'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-bl-md shadow-sm text-gray-800 dark:text-white'
                   }`}
                 >
-                  <div className="p-3 sm:p-4">
+                  <div className="p-3 sm:p-3.5">
                     {/* Exibir imagem se houver */}
                     {msg.imageUrl && (
-                      <div className="mb-3 rounded-lg overflow-hidden">
+                      <div className="mb-2 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
                         <img 
                           src={msg.imageUrl} 
                           alt="Imagem enviada" 
@@ -676,7 +686,7 @@ const AiAssistant = () => {
                         {formatTextWithMarkdown(msg.text)}
                       </div>
                     )}
-                    <span className={`text-[10px] sm:text-xs block text-right mt-2 ${
+                    <span className={`text-[10px] sm:text-xs block text-right mt-1 ${
                       msg.sender === 'user' 
                         ? 'text-white/70'
                         : 'text-gray-500 dark:text-gray-400'
@@ -686,7 +696,7 @@ const AiAssistant = () => {
                   </div>
                 </div>
                 {msg.sender === 'user' && (
-                  <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center ml-2 flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center ml-2 flex-shrink-0 mt-1">
                     <MessageCircle size={14} className="text-white" />
                   </div>
                 )}
@@ -697,8 +707,8 @@ const AiAssistant = () => {
                 <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-2 flex-shrink-0">
                   <Sparkles size={14} className="text-purple-500" />
                 </div>
-                <div className={`${messageMaxWidth} bg-gray-100 dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 rounded-bl-sm`}>
-                  <div className="flex space-x-2 py-2">
+                <div className={`${messageMaxWidth} bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-bl-md p-4 border border-gray-200 dark:border-gray-700`}>
+                  <div className="flex space-x-2 py-1">
                     <div className="w-2 h-2 rounded-full bg-purple-400 dark:bg-purple-500 animate-pulse"></div>
                     <div className="w-2 h-2 rounded-full bg-purple-400 dark:bg-purple-500 animate-pulse" style={{ animationDelay: "0.2s" }}></div>
                     <div className="w-2 h-2 rounded-full bg-purple-400 dark:bg-purple-500 animate-pulse" style={{ animationDelay: "0.4s" }}></div>
@@ -712,7 +722,7 @@ const AiAssistant = () => {
         
         <div className="p-2 sm:p-3 border-t border-gray-200 dark:border-gray-700">
           {/* Seletor de modelos melhorado */}
-          <div className="flex flex-wrap items-center gap-2 mb-3">
+          <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
             {llmModels.map((model) => {
               const IconComponent = model.icon || Cpu;
               const isActive = activeChat.modelId === model.id;
@@ -724,7 +734,7 @@ const AiAssistant = () => {
                       <Button
                         variant={isActive ? "default" : "outline"}
                         size="sm"
-                        className={`h-9 px-3 ${
+                        className={`h-8 px-2.5 text-xs ${
                           isActive 
                             ? "bg-purple-500 text-white hover:bg-purple-600" 
                             : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
@@ -732,10 +742,10 @@ const AiAssistant = () => {
                         onClick={(e) => handleModelChange(model.id, e)}
                       >
                         <IconComponent size={14} className="mr-1" />
-                        <span className="text-xs">{model.name.replace('GPT-', '')}</span>
+                        <span className="text-xs truncate">{model.name.replace('GPT-', '')}</span>
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent side="top">
                       <p className="font-medium">{model.name}</p>
                       <p className="text-xs text-gray-500">{model.description}</p>
                     </TooltipContent>
@@ -747,11 +757,11 @@ const AiAssistant = () => {
           
           {/* Visualização de imagem, se houver */}
           {imagePreview && (
-            <div className="mb-2 relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div className="mb-2 relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
               <img 
                 src={imagePreview} 
                 alt="Preview" 
-                className="max-h-32 w-auto object-cover"
+                className="max-h-28 w-auto object-cover"
               />
               <Button
                 size="icon"
@@ -772,7 +782,7 @@ const AiAssistant = () => {
                 onFocus={(e) => e.preventDefault()}
                 onClick={(e) => e.stopPropagation()}
                 placeholder={selectedImage ? "Adicione um comentário à imagem..." : "Digite sua mensagem..."}
-                className="pr-20 py-6 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-full shadow-sm focus-visible:ring-purple-500"
+                className="pr-20 py-6 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-full shadow-sm focus:border-purple-400 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-purple-400"
                 disabled={isLoading}
               />
               
@@ -792,7 +802,7 @@ const AiAssistant = () => {
                   variant={selectedImage ? "default" : "ghost"}
                   className={`h-8 w-8 rounded-full ${
                     selectedImage 
-                      ? "bg-green-500 text-white" 
+                      ? "bg-green-500 hover:bg-green-600 text-white" 
                       : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                   }`}
                   onClick={(e) => {

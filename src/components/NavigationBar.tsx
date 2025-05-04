@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, History } from 'lucide-react';
+import { LayoutGrid, History, MessageCircle } from 'lucide-react';
 
 const NavigationBar = () => {
   const location = useLocation();
@@ -19,6 +19,18 @@ const NavigationBar = () => {
         >
           <LayoutGrid size={20} />
           <span className="text-xs font-medium">Editor</span>
+        </Link>
+        
+        <Link 
+          to="/chat-history" 
+          className={`flex flex-col items-center gap-1 px-4 py-1.5 rounded-lg transition-all ${
+            isActive('/chat-history') 
+              ? 'text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-white/10' 
+              : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-white/5'
+          }`}
+        >
+          <MessageCircle size={20} />
+          <span className="text-xs font-medium">Chat</span>
         </Link>
         
         <Link 

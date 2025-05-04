@@ -80,7 +80,7 @@ const ChatHistoryPage = () => {
   };
   
   const handleUseChat = (chat: Chat) => {
-    setActiveChat(chat);
+    setActiveChat(chat.id);
     toast({
       title: "Conversa ativada",
       description: "Você pode continuar essa conversa no assistente.",
@@ -120,7 +120,7 @@ const ChatHistoryPage = () => {
                   variant="default"
                   onClick={() => {
                     const newChat = createNewChat();
-                    setActiveChat(newChat);
+                    setActiveChat(newChat.id);
                     toast({
                       title: "Nova conversa criada",
                       description: "Você pode continuar essa conversa no assistente.",

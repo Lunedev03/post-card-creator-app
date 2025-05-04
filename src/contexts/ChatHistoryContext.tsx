@@ -57,11 +57,28 @@ export const ChatHistoryProvider: React.FC<ChatHistoryProviderProps> = ({ childr
     const savedChats = localStorage.getItem('chatHistory');
     if (savedChats) {
       try {
-        const parsedChats = JSON.parse(savedChats).map((chat: any) => ({
+        const parsedChats = JSON.parse(savedChats).map((chat: {
+          id: string;
+          title: string;
+          messages: {
+            text: string;
+            sender: 'user' | 'ai';
+            timestamp: string;
+            imageUrl?: string;
+          }[];
+          createdAt: string;
+          updatedAt: string;
+          modelId: string;
+        }) => ({
           ...chat,
           createdAt: new Date(chat.createdAt),
           updatedAt: new Date(chat.updatedAt),
-          messages: chat.messages.map((msg: any) => ({
+          messages: chat.messages.map((msg: {
+            text: string;
+            sender: 'user' | 'ai';
+            timestamp: string;
+            imageUrl?: string;
+          }) => ({
             ...msg,
             timestamp: new Date(msg.timestamp)
           }))

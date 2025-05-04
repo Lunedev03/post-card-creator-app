@@ -211,7 +211,7 @@ export const sendMessageToOpenAI = async (
         top_p: 1,
         frequency_penalty: 0,
         presence_penalty: 0,
-      });
+      }) as OpenAI.Chat.Completions.ChatCompletion;
       
       return response.choices[0]?.message?.content || 'Desculpe, não consegui gerar uma resposta.';
     });
@@ -242,7 +242,7 @@ export const sendMessageToOpenAI = async (
         top_p: 1,
         frequency_penalty: 0,
         presence_penalty: 0,
-      });
+      }) as OpenAI.Chat.Completions.ChatCompletion;
       
       return response.choices[0]?.message?.content || 'Desculpe, não consegui gerar uma resposta.';
     } catch (fallbackError) {
@@ -255,4 +255,11 @@ export const sendMessageToOpenAI = async (
 // Verificar se a chave API está configurada
 export const isOpenAIConfigured = (): boolean => {
   return !!getApiKey();
+};
+
+export const createMessagesPayload = (
+  messageHistory: Message[],
+  systemMessage?: string
+): Array<OpenAI.Chat.ChatCompletionMessageParam> => {
+  // ... existing code ...
 }; 

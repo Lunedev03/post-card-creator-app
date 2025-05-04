@@ -1,4 +1,8 @@
 import type { Config } from "tailwindcss";
+import { fontFamily } from 'tailwindcss/defaultTheme';
+import plugin from 'tailwindcss/plugin';
+import animatePlugin from 'tailwindcss-animate';
+import typographyPlugin from '@tailwindcss/typography';
 
 export default {
 	darkMode: ["class"],
@@ -93,7 +97,7 @@ export default {
 		}
 	},
 	plugins: [
-		require("tailwindcss-animate"),
-		require("@tailwindcss/typography"),
+		animatePlugin,
+		typographyPlugin,
 	],
 } satisfies Config;

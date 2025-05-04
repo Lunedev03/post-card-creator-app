@@ -115,6 +115,7 @@ const Index = () => {
             onPositionChange={setEmojiPosition}
             onSizeChange={setEmojiSize}
             className="z-10"
+            preventExitViewport={false}
           >
             <EmojiPicker />
           </DraggableComponent>
@@ -127,6 +128,7 @@ const Index = () => {
             onPositionChange={setAiPosition}
             onSizeChange={setAiSize}
             className="z-10"
+            preventExitViewport={false}
           >
             <AiAssistant />
           </DraggableComponent>
