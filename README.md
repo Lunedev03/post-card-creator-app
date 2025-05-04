@@ -1,73 +1,85 @@
-# Welcome to your Lovable project
+# Post Card Creator App
 
-## Project info
+Uma aplicação web para criar, personalizar e salvar cartões de postagens com emojis e assistência via IA.
 
-**URL**: https://lovable.dev/projects/b8cbe018-2022-496c-b94a-70250df607a6
+## Tecnologias Utilizadas
 
-## How can I edit this code?
+- **Vite** ([Documentação](https://vitejs.dev/))
+- **React** ([Documentação](https://reactjs.org/))
+- **TypeScript** ([Documentação](https://www.typescriptlang.org/))
+- **Tailwind CSS** ([Documentação](https://tailwindcss.com/))
+- **shadcn-ui** ([Repositório](https://github.com/shadcn/shadcn-ui))
+- **Radix UI** ([Documentação](https://www.radix-ui.com/))
+- **React Query** ([Documentação](https://tanstack.com/query))
+- **Zod** ([Documentação](https://zod.dev/))
+- **OpenAI** ([Documentação](https://platform.openai.com/docs/))
+- **html2canvas** ([Documentação](https://github.com/niklasvh/html2canvas))
 
-There are several ways of editing your application.
+## Funcionalidades
 
-**Use Lovable**
+- Criação e visualização de previews de postagens.
+- Seleção e inserção de emojis em tempo real.
+- Assistente de IA para sugerir textos e melhorias.
+- Interface arrastável (drag and drop) responsiva.
+- Histórico de postagens e de conversas com a IA.
+- Suporte a temas Claro/Escuro com detecção de preferência do sistema.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b8cbe018-2022-496c-b94a-70250df607a6) and start prompting.
+## Estrutura do Projeto
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+public/              # Arquivos estáticos e index.html
+src/
+  ├─ components/     # Componentes reutilizáveis (UI, layouts, post, emoji, chat)
+  ├─ contexts/       # Contextos de estado global para histórico
+  ├─ hooks/          # Hooks customizados
+  ├─ pages/          # Páginas principais (Index, History, ChatHistory, NotFound)
+  ├─ services/       # Integração com APIs (OpenAI, etc.)
+  ├─ utils/          # Funções utilitárias
+  ├─ App.tsx         # Componente raiz e roteamento
+  └─ main.tsx        # Ponto de entrada da aplicação
 ```
 
-**Edit a file directly in GitHub**
+## Instalação
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+# Clone o repositório
+git clone <URL_DO_REPO>
+cd post-card-creator-app
 
-**Use GitHub Codespaces**
+# Instale as dependências
+npm install
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Scripts Disponíveis
 
-## What technologies are used for this project?
+- `npm run dev`  
+  Inicia o servidor de desenvolvimento (com hot-reload).
+- `npm run build`  
+  Gera os arquivos de produção em `dist/`.
+- `npm run preview`  
+  Serve a versão de produção localmente.
+- `npm run lint`  
+  Executa o ESLint para analisar o código.
 
-This project is built with:
+## Uso
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. Execute `npm run dev`.
+2. Abra `http://localhost:5173` no navegador.
+3. Crie e personalize seu post com emojis ou use o assistente de IA.
+4. Arraste e redimensione componentes conforme desejar.
+5. Acesse o menu `Histórico` para visualizar posts e conversas salvos.
 
-## How can I deploy this project?
+## Deploy
 
-Simply open [Lovable](https://lovable.dev/projects/b8cbe018-2022-496c-b94a-70250df607a6) and click on Share -> Publish.
+Este projeto pode ser implantado em qualquer serviço estático (Vercel, Netlify, GitHub Pages). Basta apontar para a pasta `dist/` após o build.
 
-## Can I connect a custom domain to my Lovable project?
+## Contribuição
 
-Yes, you can!
+1. Fork e clone este repositório.
+2. Crie uma branch para sua feature: `git checkout -b feature/minha-feature`.
+3. Faça commit das suas alterações seguindo Conventional Commits.
+4. Abra um Pull Request descrevendo as mudanças.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Licença
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Este projeto está licenciado sob a **MIT License**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
